@@ -101,7 +101,7 @@ const ProductParser = () => {
         return (
           <>
             <div>
-            <img src="/img/bg.jpg" className="img" width={'500px'} alt="" />
+            <img src="./img/bg.jpg" className="img" width={'500px'} alt="" />
             <div className="group">
               <p className="name">{o.name}</p>
             <p className="price">Giá : {o.price} Triệu</p>
