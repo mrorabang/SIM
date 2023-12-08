@@ -15,11 +15,11 @@ img{
 }
 .group{
   position: relative;
-  top:-230px;
+  top:-370px;
 }
 .name{
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  font-size: 50px;
+  font-size: 70px;
   font-weight: bold;
   color: red;
 }
@@ -29,5 +29,6 @@ img{
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 .btn-down{
-  margin-top: 100px;
+  display: block;
+  margin: -160px auto 50px auto;
 }
