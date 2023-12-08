@@ -25,16 +25,18 @@ img{
 
 .name{
   font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 120px;
+  font-size: 220px;
   font-weight: bold;
   color: red;
+  -webkit-text-stroke: 5px black;
+  margin-top: -400px;
 }
 .price{
   display: block;
-  margin-top: 40px;
-  font-size: 40px;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  margin-top: 130px;
+  margin-left: 40px;
   font-weight: 100;
+  white-space-collapse: 2px;
 }
 .upload{
   width: 20%;
@@ -44,4 +46,16 @@ img{
   background-color: rgb(175, 175, 175);
 color: white;
 padding: 10px;
+}
+.gr-contact{
+  display: block;
+  text-align: left;
+}
+.gr-contact p{
+  display: block;
+  margin: auto;
+  width: 500px;
+}
+.gr-contact .icon{
+  margin-bottom: 30px;
 }
