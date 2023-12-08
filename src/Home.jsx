@@ -8,14 +8,18 @@ import {
   MDBRow,
   MDBCol,
   MDBInput,
+  MDBFile
 } from "mdb-react-ui-kit";
-import html2canvas from 'html2canvas';
+import html2canvas from "html2canvas";
 
 const Home = () => {
   const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [allImagesSelected, setAllImagesSelected] = useState(false)
   const originalInputText = useRef("");
+
   const parseInput = () => {
     const regex = /([\d.]+)=(.+)/g;
     const matches = [...inputText.matchAll(regex)];
@@ -49,18 +53,59 @@ const Home = () => {
   const captureAndDownload = (index) => {
     const container = document.getElementById(`imageContainer-${index}`);
     html2canvas(container).then(function (canvas) {
-      const imgUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
+      const imgUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
       link.href = imgUrl;
-      link.download = `captured_image_${index}.png`;
+      link.download = `Sim_${index + 1}.png`;
       link.click();
     });
   };
 
+  const handleImageChange = (e) => {
+    // Lấy file từ sự kiện onChange
+    const file = e.target.files[0];
+
+    // Kiểm tra xem có file được chọn không
+    if (file) {
+      // Kiểm tra định dạng của file (ví dụ: kiểm tra có phải là file hình ảnh không)
+      if (file.type.startsWith('image/')) {
+        // Đọc file thành URL dạng base64
+        const reader = new FileReader();
+        reader.onload = (readerEvent) => {
+          setSelectedImage(readerEvent.target.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Nếu không phải là file hình ảnh, bạn có thể xử lý hoặc thông báo lỗi ở đây
+        console.error('Chỉ chấp nhận file hình ảnh.');
+      }
+    }
+  };
+
+  const handleAllImagesButtonClick = () => {
+    const downloadPromises = [];
+
+    output.forEach((o, index) => {
+      const container = document.getElementById(`imageContainer-${index}`);
+      const downloadPromise = html2canvas(container).then((canvas) => {
+        const imgUrl = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = imgUrl;
+        link.download = `Sim_${index + 1}.png`;
+        link.click();
+      });
+
+      downloadPromises.push(downloadPromise);
+    });
+
+    Promise.all(downloadPromises).then(() => {
+      console.log("Đã tải xuống tất cả ảnh!");
+    });
+  };
 
   return (
     <div className="App">
-      <label htmlFor="inputText">Hãy nhập list tại đây:</label>
+      <label htmlFor="inputText" style={{fontSize:'30px'}}>Hãy nhập list tại đây:</label><br />
       <textarea
         id="inputText"
         cols="30"
@@ -69,26 +114,33 @@ const Home = () => {
         onChange={(e) => setInputText(e.target.value)}
       ></textarea>
       <br />
-      <MDBBtn onClick={parseInput}>Tách số và Giá Bán</MDBBtn>
+      <div className="upload">     
+      <MDBFile size='sm' id='formFileSm' onChange={handleImageChange} />
+      </div>
+      <MDBBtn onClick={parseInput}>Tách số và Giá Bán</MDBBtn><br /><br />
+      <MDBBtn onClick={handleAllImagesButtonClick}>
+        Tải tất cả ảnh
+      </MDBBtn>
       <hr />
       <MDBContainer>
         <MDBRow center>
           <MDBCol size="4">
             <div className="result">
-              <strong>Kết quả:</strong>
+              <strong>Kết quả ( {output.length} số ) :</strong>
               <MDBListGroup numbered style={{ maxWidth: "26rem" }} light>
-                {output.map((o) => {
-                  return (
-                    <MDBListGroupItem className="d-flex justify-content-between align-items-center">
-                      <div className="ms-2 me-auto">
-                        <div className="fw-bold">{o.name}</div>
-                      </div>
-                      <MDBBadge pill light>
-                        {o.price} Triệu
-                      </MDBBadge>
-                    </MDBListGroupItem>
-                  );
-                })}
+                {output.map((o, index) => (
+                  <MDBListGroupItem
+                    key={index}
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    <div className="ms-2 me-auto">
+                      <div className="fw-bold">{o.name}</div>
+                    </div>
+                    <MDBBadge pill light>
+                      {o.price} Triệu
+                    </MDBBadge>
+                  </MDBListGroupItem>
+                ))}
               </MDBListGroup>
             </div>
           </MDBCol>
@@ -104,37 +156,30 @@ const Home = () => {
           </MDBCol>
         </MDBRow>
       </MDBContainer>
-
+      <br /><br />
+     
       <hr />
       <h1>Tạo ảnh</h1>
-      {output.map((o,index) => {
-        return (
-          <>
-            {/* <div>
-              <label id="imageContainer">
-                <img src="./img/bg.jpg" className="img" width={'100%'} alt="" />
-                <div className="group">
-                  <p className="name">{o.name}</p>
-                  <p className="price">Giá : {o.price} Triệu</p>
-                </div>
-              </label>
-              <MDBBtn className="btn-down" onClick={captureAndDownload}>Tải xuống</MDBBtn>
-            </div> */}
-            <div>
-            <label className='bg-image' id={`imageContainer-${index}`}>
-              <img src='./img/bg.jpg'  alt='Sample' />
-              <div className='mask' >
-                <div className='d-flex justify-content-center align-items-center h-100'>
-                  <p className='text-red mb-0 name'>{o.name}</p>
-                  <p className="price">Giá:{o.price} Triệu</p>
+      {output.map((o, index) => (
+        <div key={index}>
+          <div className="gr-img">
+            <label className="bg-image label-img" id={`imageContainer-${index}`}>
+              <img src={selectedImage} alt="Sample" />
+              <div className="mask">
+                <div className="d-flex justify-content-center align-items-center h-100">
+                  <p className="text-red mb-0 name">
+                    {o.name} <br />
+                    <span className="price" style={{ color: "black", fontSize: "40px", fontStyle: "italic", fontFamily: " Verdana, Geneva, Tahoma, sans-serif" }}>
+                      Giá: {o.price} Triệu
+                    </span>
+                  </p>
                 </div>
               </div>
             </label>
-            <MDBBtn className="btn-down" onClick={() => captureAndDownload(index)}>Tải xuống</MDBBtn>
-            </div>
-          </>
-        );
-      })}
+          </div>
+          <br /><br /><br />
+        </div>
+      ))}
     </div>
   );
 };

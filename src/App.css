@@ -11,24 +11,19 @@ img{
   text-align: center;
   display: block;
   margin: auto;
-  margin-bottom: 20px;
 }
-.group{
-  position: relative;
-  top:-370px;
-}
+
 .name{
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  font-size: 70px;
+  font-size: 120px;
   font-weight: bold;
   color: red;
 }
 .price{
-  font-size: 25px;
-  font-style: italic;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-}
-.btn-down{
   display: block;
-  margin: -160px auto 50px auto;
+  margin-top: 40px;
+}
+.upload{
+  width: 20%;
+  margin: 0 auto 10px auto;
 }
