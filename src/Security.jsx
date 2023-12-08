@@ -1,31 +1,70 @@
-import { MDBBtn, MDBInput } from 'mdb-react-ui-kit';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-function Security() {
-    const nav=useNavigate();
-    const [password, setPassword] = useState("");
-    const handlePasswordSubmit = () => {
-      if (password === "9320") {
-        nav(`/homeQLSQuan`);
-      } else {
-        alert("Mật khẩu không đúng. Vui lòng thử lại.");
-      }
-    };
+import React, { useState, useEffect } from 'react';
+import {
+  MDBModal,
+  MDBModalDialog,
+  MDBModalContent,
+  MDBModalHeader,
+  MDBModalTitle,
+  MDBModalBody,
+  MDBModalFooter,
+  MDBInput,
+  MDBBtn
+} from 'mdb-react-ui-kit';
 
-    return (
-        <div>
-            <div style={{width:"50%",margin:'50px auto'}}>
-                Enter Password:
-                <MDBInput label='Example label' id='form1' type='text'
-                    label="Password"
-                    id="form1"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}/>
-                <MDBBtn style={{display:'block',margin:'20px auto'}} onClick={handlePasswordSubmit}>OK</MDBBtn>
-            </div>
-        </div>
-    );
+export default function App() {
+  const [basicModal, setBasicModal] = useState(true);
+  const [password, setPassword] = useState("");
+  const [shouldCloseModal, setShouldCloseModal] = useState(false);
+
+  const handlePasswordSubmit = () => {
+    if (password === "9320") {
+      setShouldCloseModal(true);
+    } else {
+      alert("Mật khẩu không đúng. Vui lòng thử lại.");
+    }
+  };
+  const handleCloseModal = () => {
+    if (shouldCloseModal) {
+      setBasicModal(false);
+    }
+  };
+  useEffect(() => {
+    if (basicModal) {
+      setBasicModal(true);
+    }
+  }, [basicModal]);
+  useEffect(() => {
+    handleCloseModal();
+  }, [shouldCloseModal]);
+
+  return (
+    <>
+      <MDBModal
+        open={basicModal}
+        setopen={setBasicModal}
+        tabIndex='-1'
+        backdrop={shouldCloseModal ? true : 'static'}
+        onClick={handleCloseModal}
+      >
+        <MDBModalDialog>
+          <MDBModalContent>
+            <MDBModalHeader>
+              <MDBModalTitle>Nhập mật khẩu</MDBModalTitle>
+            </MDBModalHeader>
+            <MDBModalBody>
+              <MDBInput
+                label='Nhập mật khẩu'
+                type='password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </MDBModalBody>
+            <MDBModalFooter>
+              <MDBBtn onClick={handlePasswordSubmit}>OK</MDBBtn>
+            </MDBModalFooter>
+          </MDBModalContent>
+        </MDBModalDialog>
+      </MDBModal>
+    </>
+  );
 }
-
-export default Security;

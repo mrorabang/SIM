@@ -1,7 +1,17 @@
 .App {
   text-align: center;
 }
-
+.headerApp{
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  font-size: 50px;
+  background-color: black;
+}
+.headerApp a{
+  color: white;
+  text-decoration: 2px underline white;
+}
 .result{
   text-align: center;
   margin: auto;
@@ -14,7 +24,7 @@ img{
 }
 
 .name{
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-size: 120px;
   font-weight: bold;
   color: red;
@@ -22,8 +32,16 @@ img{
 .price{
   display: block;
   margin-top: 40px;
+  font-size: 40px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-weight: 100;
 }
 .upload{
   width: 20%;
   margin: 0 auto 10px auto;
+}
+.header{
+  background-color: rgb(175, 175, 175);
+color: white;
+padding: 10px;
 }

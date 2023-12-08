@@ -12,7 +12,7 @@ import {
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
 
-const Home = () => {
+const HomeG = () => {
   const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -106,7 +106,7 @@ const Home = () => {
   return (
     <div className="App">
       <div className="header">
-        <h1>SIM KHÔNG GÓP</h1>
+        <h1>SIM TRẢ GÓP</h1>
       </div>
       <label htmlFor="inputText" style={{fontSize:'30px'}}>Hãy nhập list tại đây:</label><br />
       <textarea
@@ -160,7 +160,6 @@ const Home = () => {
         </MDBRow>
       </MDBContainer>
       <br /><br />
-     
       <hr />
       <h1>Tạo ảnh</h1>
       {output.map((o, index) => (
@@ -172,8 +171,8 @@ const Home = () => {
                 <div className="d-flex justify-content-center align-items-center h-100">
                   <p className="text-red mb-0 name">
                     {o.name} <br />
-                    <span className="price" style={{ color: "black", fontSize: "40px", fontStyle: "italic", fontFamily: " Verdana, Geneva, Tahoma, sans-serif" }}>
-                      Giá: {o.price} Triệu
+                    <span className="price" style={{ color: "black",fontStyle:'italic'}}>
+                      Trả góp {o.price/10} Triệu x 10 Tháng
                     </span>
                   </p>
                 </div>
@@ -187,4 +186,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomeG;
