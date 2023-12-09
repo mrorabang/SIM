@@ -1,61 +1,80 @@
 .App {
   text-align: center;
 }
-.headerApp{
+
+.headerApp {
   display: flex;
   justify-content: center;
-  gap: 50px;
-  font-size: 50px;
+  gap: 70px;
+  font-size: 35px;
   background-color: black;
 }
-.headerApp a{
-  color: white;
-  text-decoration: 2px underline white;
+
+a {
+  font-weight: bold;
+  color: black;
+  text-decoration: 1px underline rgb(0, 0, 0);
+  transition: 0.3s;
 }
-.result{
+
+ a:hover {
+  color: rgb(165, 165, 165);
+  text-decoration: 1px underline rgb(165, 165, 165);
+}
+
+.result {
   text-align: center;
   margin: auto;
   display: block;
 }
-img{
+
+img {
   text-align: center;
   display: block;
   margin: auto;
 }
 
-.name{
-  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+.name {
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-size: 220px;
   font-weight: bold;
   color: red;
   -webkit-text-stroke: 5px black;
   margin-top: -400px;
 }
-.price{
+
+.price {
   display: block;
   margin-top: 130px;
   margin-left: 40px;
   font-weight: 100;
   white-space-collapse: 2px;
 }
-.upload{
+
+.upload {
   width: 20%;
   margin: 0 auto 10px auto;
 }
-.header{
-  background-color: rgb(175, 175, 175);
-color: white;
-padding: 10px;
+
+.header {
+  background-color: rgb(147, 147, 147);
+  color: white;
+  margin-top: 55px;
+  padding: 10px;
 }
-.gr-contact{
+
+.gr-contact {
   display: block;
   text-align: left;
+  margin-top: 55px;
 }
-.gr-contact p{
+
+.gr-contact p {
   display: block;
   margin: auto;
-  width: 500px;
+  width: fit-content;
 }
-.gr-contact .icon{
+
+.gr-contact .icon {
   margin-bottom: 30px;
 }

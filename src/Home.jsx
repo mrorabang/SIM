@@ -50,16 +50,6 @@ const Home = () => {
     handleSearch();
   }, [searchTerm]);
 
-  const captureAndDownload = (index) => {
-    const container = document.getElementById(`imageContainer-${index}`);
-    html2canvas(container).then(function (canvas) {
-      const imgUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = imgUrl;
-      link.download = `Sim_${index + 1}.png`;
-      link.click();
-    });
-  };
 
   const handleImageChange = (e) => {
     // Lấy file từ sự kiện onChange
