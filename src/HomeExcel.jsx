@@ -42,12 +42,9 @@ const HomeExcel = () => {
     originalInputText.current = inputText;
   };
 
-
-
-
   const handleSearch = () => {
     const filteredResults = output.filter((product) =>
-      product.name.includes(searchTerm)
+      product.productName.includes(searchTerm)
     );
     setOutput(filteredResults);
   };
@@ -139,7 +136,6 @@ const HomeExcel = () => {
                     </MDBBadge>
                   </MDBListGroupItem>
                 ))}
-
               </MDBListGroup>
             </div>
           </MDBCol>
