@@ -8,7 +8,7 @@ import {
   MDBRow,
   MDBCol,
   MDBInput,
-  MDBFile
+  MDBFile,MDBIcon
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
 
@@ -114,6 +114,7 @@ const HomeExcel = () => {
       </div>
       <MDBBtn onClick={parseInput}>Tách số và Giá Bán</MDBBtn><br /><br />
       <MDBBtn onClick={handleAllImagesButtonClick}>
+      <MDBIcon fas icon="download" />
         Tải tất cả ảnh
       </MDBBtn>
       <hr />
