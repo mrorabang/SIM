@@ -12,7 +12,7 @@ import {
   MDBIcon
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 
 
 const HomeG = () => {
@@ -165,9 +165,9 @@ const HomeG = () => {
               <img src={selectedImage} alt="Sample" />
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
-                  <p className="text-red mb-0 name">
+                  <p className="text-red mb-0 homeg-name">
                     {o.name} <br />
-                    <span className="price" style={{ color: "black",fontStyle:'italic'}}>
+                    <span className="homeg-price" style={{ color: "black",fontStyle:'italic'}}>
                       Trả góp {o.price/10} Triệu x 10 Tháng
                     </span>
                   </p>

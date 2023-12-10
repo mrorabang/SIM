@@ -164,9 +164,9 @@ const Home = () => {
               <img src={selectedImage} alt="Sample" />
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
-                  <p className="text-red mb-0 name">
+                  <p className="text-red mb-0 home-name">
                     {o.name} <br />
-                    <span className="price" style={{ color: "black", fontSize: "40px", fontStyle: "italic", fontFamily: " Verdana, Geneva, Tahoma, sans-serif" }}>
+                    <span className="home-price" style={{ color: "black", fontSize: "40px", fontStyle: "italic", fontFamily: " Verdana, Geneva, Tahoma, sans-serif" }}>
                       Giá: {o.price} Triệu
                     </span>
                   </p>

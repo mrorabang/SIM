@@ -167,9 +167,9 @@ const HomeExcel = () => {
               <img src={selectedImage} alt="Sample" />
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
-                  <p className=" mb-0 name">
+                  <p className=" mb-0 homeex-name">
                     {o.productName} <br />
-                    <span className="price" style={{ WebkitTextStroke:'1px black', color: "purple", fontSize: "40px",fontWeight:"bold", fontFamily:"serif" }}>
+                    <span className="homeex-price" style={{ WebkitTextStroke:'1px black', color: "purple", fontSize: "40px",fontWeight:"bold", fontFamily:"serif" }}>
                       Giá bán cực tốt: {o.price} Triệu - Hỗ trợ trả góp
                     </span>
                   </p>
