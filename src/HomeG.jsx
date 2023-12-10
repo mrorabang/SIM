@@ -12,6 +12,8 @@ import {
   MDBIcon
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
+import Swal from 'sweetalert2'
+
 
 const HomeG = () => {
   const [inputText, setInputText] = useState("");
@@ -91,6 +93,8 @@ const HomeG = () => {
 
     Promise.all(downloadPromises).then(() => {
       console.log("Đã tải xuống tất cả ảnh!");
+      Swal.fire("Đã tải xuống tất cả ảnh !");
+
     });
   };
 

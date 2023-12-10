@@ -11,6 +11,7 @@ import {
   MDBFile,MDBIcon
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
+import Swal from 'sweetalert2'
 
 const Home = () => {
   const [inputText, setInputText] = useState("");
@@ -19,6 +20,7 @@ const Home = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [allImagesSelected, setAllImagesSelected] = useState(false)
   const originalInputText = useRef("");
+
 
   const parseInput = () => {
     const regex = /([\d.]+)=(.+)/g;
@@ -90,6 +92,7 @@ const Home = () => {
 
     Promise.all(downloadPromises).then(() => {
       console.log("Đã tải xuống tất cả ảnh!");
+      Swal.fire("Đã tải xuống tất cả ảnh !");
     });
   };
 

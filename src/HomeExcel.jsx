@@ -11,6 +11,8 @@ import {
   MDBFile,MDBIcon
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
+import Swal from 'sweetalert2'
+
 
 const HomeExcel = () => {
   const [inputText, setInputText] = useState("");
@@ -92,6 +94,8 @@ const HomeExcel = () => {
 
     Promise.all(downloadPromises).then(() => {
       console.log("Đã tải xuống tất cả ảnh!");
+      Swal.fire("Đã tải xuống tất cả ảnh !");
+
     });
   };
 
