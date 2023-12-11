@@ -97,3 +97,9 @@ img {
 .gr-contact .icon {
   margin-bottom: 30px;
 }
+
+.form{
+  width: 40%;
+  display: block;
+  margin: auto;
+}
