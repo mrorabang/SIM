@@ -18,12 +18,10 @@ const Home = () => {
   const [output, setOutput] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [allImagesSelected, setAllImagesSelected] = useState(false)
   const originalInputText = useRef("");
 
-
   const parseInput = () => {
-    const regex = /([\d.]+)=(.+)/g;
+    const regex = /([\d.]+)\s*=\s*(.+)/g;
     const matches = [...inputText.matchAll(regex)];
 
     if (!matches || matches.length === 0) {
@@ -32,14 +30,15 @@ const Home = () => {
     }
 
     const result = matches.map((match) => {
-      const name = match[1];
+      const product = match[1];
       const price = parseFloat(match[2]);
-      return { name, price };
+      return { product, price };
     });
 
     setOutput(result);
     originalInputText.current = inputText;
   };
+  
 
   const handleSearch = () => {
     const filteredResults = output.filter((product) =>
@@ -131,7 +130,7 @@ const Home = () => {
                     className="d-flex justify-content-between align-items-center"
                   >
                     <div className="ms-2 me-auto">
-                      <div className="fw-bold">{o.name}</div>
+                      <div className="fw-bold">{o.product}</div>
                     </div>
                     <MDBBadge pill light>
                       {o.price} Triệu
@@ -165,7 +164,7 @@ const Home = () => {
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
                   <p className="text-red mb-0 home-name">
-                    {o.name} <br />
+                    {o.product} <br />
                     <span className="home-price" style={{ color: "black", fontSize: "40px", fontStyle: "italic", fontFamily: " Verdana, Geneva, Tahoma, sans-serif" }}>
                       Giá: {o.price} Triệu
                     </span>

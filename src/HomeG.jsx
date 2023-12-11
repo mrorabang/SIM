@@ -14,17 +14,15 @@ import {
 import html2canvas from "html2canvas";
 import Swal from 'sweetalert2';
 
-
 const HomeG = () => {
   const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [allImagesSelected, setAllImagesSelected] = useState(false)
   const originalInputText = useRef("");
 
   const parseInput = () => {
-    const regex = /([\d.]+)=(.+)/g;
+    const regex = /([\d.]+)\s*=\s*(.+)/g;
     const matches = [...inputText.matchAll(regex)];
 
     if (!matches || matches.length === 0) {
@@ -33,14 +31,15 @@ const HomeG = () => {
     }
 
     const result = matches.map((match) => {
-      const name = match[1];
+      const product = match[1];
       const price = parseFloat(match[2]);
-      return { name, price };
+      return { product, price };
     });
 
     setOutput(result);
     originalInputText.current = inputText;
   };
+
 
   const handleSearch = () => {
     const filteredResults = output.filter((product) =>
@@ -103,7 +102,7 @@ const HomeG = () => {
       <div className="header">
         <h1>SIM TRẢ GÓP</h1>
       </div>
-      <label htmlFor="inputText" style={{fontSize:'30px'}}>Hãy nhập list tại đây:</label><br />
+      <label htmlFor="inputText" style={{ fontSize: '30px' }}>Hãy nhập list tại đây:</label><br />
       <textarea
         id="inputText"
         cols="30"
@@ -112,12 +111,12 @@ const HomeG = () => {
         onChange={(e) => setInputText(e.target.value)}
       ></textarea>
       <br />
-      <div className="upload">     
-      <MDBFile size='sm' id='formFileSm' onChange={handleImageChange} />
+      <div className="upload">
+        <MDBFile size='sm' id='formFileSm' onChange={handleImageChange} />
       </div>
       <MDBBtn onClick={parseInput}>Tách số và Giá Bán</MDBBtn><br /><br />
       <MDBBtn onClick={handleAllImagesButtonClick}>
-      <MDBIcon fas icon="download" />
+        <MDBIcon fas icon="download" />
         Tải tất cả ảnh
       </MDBBtn>
       <hr />
@@ -133,7 +132,7 @@ const HomeG = () => {
                     className="d-flex justify-content-between align-items-center"
                   >
                     <div className="ms-2 me-auto">
-                      <div className="fw-bold">{o.name}</div>
+                      <div className="fw-bold">{o.product}</div>
                     </div>
                     <MDBBadge pill light>
                       {o.price} Triệu
@@ -150,7 +149,7 @@ const HomeG = () => {
               type="text"
               size="lg"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
             />
           </MDBCol>
         </MDBRow>
@@ -166,9 +165,12 @@ const HomeG = () => {
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
                   <p className="text-red mb-0 homeg-name">
-                    {o.name} <br />
-                    <span className="homeg-price" style={{ color: "black",fontStyle:'italic'}}>
-                      Trả góp {o.price/10} Triệu x 10 Tháng
+                    {o.product} <br />
+                    <span className="homeg-price" style={{
+                      color: "purple", fontStyle: 'italic', fontSize: '30px', fontWeight: 'normal',
+                      webkitTextStroke: "0.5px black",fontFamily:'arial'
+                    }}>
+                      Trả góp {o.price / 10} Triệu x 10 Tháng
                     </span>
                   </p>
                 </div>
