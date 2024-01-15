@@ -38,12 +38,7 @@ function App() {
             <MDBNavbarNav className="mr-auto mb-2 mb-lg-0">
               <MDBNavbarItem>
                 <MDBNavbarLink active aria-current="page">
-                <Link to="/homeg9320">Sim Trả Góp</Link>
-                </MDBNavbarLink>
-              </MDBNavbarItem>
-              <MDBNavbarItem>
-                <MDBNavbarLink>
-                <Link to="/home9320">Sim Không Góp</Link>
+                <Link to="/homeg9320">Create Picture</Link>
                 </MDBNavbarLink>
               </MDBNavbarItem>
               <MDBNavbarItem>

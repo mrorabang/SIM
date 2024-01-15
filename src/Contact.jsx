@@ -36,8 +36,10 @@ function Contact() {
                 <br />
                 <MDBIcon fab icon="facebook" size="3x" />{" "}
                 <a href="https://www.facebook.com/mquan.0903?mibextid=LQQJ4d">
-                    https://www.facebook.com/mquan.0903?mibextid=LQQJ4d
+                    Minh Quân
                 </a>
+                |
+                <a href="https://www.facebook.com/profile.php?id=100058690037583&mibextid=LQQJ4d">Minh Khánh</a>
             </p>
             <br />
 
@@ -56,6 +58,7 @@ function Contact() {
             </div>
         </div>
     );
+    
 }
 
 export default Contact;

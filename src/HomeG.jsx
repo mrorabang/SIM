@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   MDBListGroup,
   MDBListGroupItem,
@@ -22,7 +22,9 @@ const HomeG = () => {
   const originalInputText = useRef("");
 
   const parseInput = () => {
-    const regex = /([\d.]+)\s*=\s*(.+)/g;
+    const regex = /([\d.]+)\s*-\s*(.+)/g; // phan biet bang dau -
+    // const regex = /([\d.]+)\s*=\s*(.+)/g; // phan biet bang dau =
+
     const matches = [...inputText.matchAll(regex)];
 
     if (!matches || matches.length === 0) {
@@ -39,19 +41,6 @@ const HomeG = () => {
     setOutput(result);
     originalInputText.current = inputText;
   };
-
-
-  const handleSearch = () => {
-    const filteredResults = output.filter((product) =>
-      product.name.includes(searchTerm)
-    );
-    setOutput(filteredResults);
-  };
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm]);
-
 
   const handleImageChange = (e) => {
     // Lấy file từ sự kiện onChange
@@ -100,7 +89,7 @@ const HomeG = () => {
   return (
     <div className="App">
       <div className="header">
-        <h1>SIM TRẢ GÓP</h1>
+        <h1>CREATE PICTURE</h1>
       </div>
       <label htmlFor="inputText" style={{ fontSize: '30px' }}>Hãy nhập list tại đây:</label><br />
       <textarea
@@ -149,7 +138,7 @@ const HomeG = () => {
               type="text"
               size="lg"
               value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            // onChange={(e) => setSearchTerm(e.target.value)}
             />
           </MDBCol>
         </MDBRow>
@@ -162,15 +151,15 @@ const HomeG = () => {
           <div className="gr-img">
             <label className="bg-image label-img" id={`imageContainer-${index}`}>
               <img src={selectedImage} alt="Sample" />
+              {/* set hình vuông có kích thước 736*736 */}
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
-                  <p className="text-red mb-0 homeg-name">
+                  <p className="text-red mb-0 homeg-name" >
                     {o.product} <br />
                     <span className="homeg-price" style={{
-                      color: "purple", fontStyle: 'italic', fontSize: '30px', fontWeight: 'normal',
-                      webkitTextStroke: "0.5px black",fontFamily:'arial'
+                      color: "black", fontSize: '30px'
                     }}>
-                      Trả góp {o.price / 10} Triệu x 10 Tháng
+                       Giá bán: {o.price} Triệu 
                     </span>
                   </p>
                 </div>

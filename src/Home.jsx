@@ -22,6 +22,7 @@ const Home = () => {
 
   const parseInput = () => {
     const regex = /([\d.]+)\s*=\s*(.+)/g;
+    // const regex = /([\d.]+)\s*-\s*(.+)/g; // phan biet bang dau -
     const matches = [...inputText.matchAll(regex)];
 
     if (!matches || matches.length === 0) {
@@ -98,7 +99,7 @@ const Home = () => {
   return (
     <div className="App">
       <div className="header">
-        <h1>SIM KHÔNG GÓP</h1>
+        <h1>Create Picture</h1>
       </div>
       <label htmlFor="inputText" style={{fontSize:'30px'}}>Hãy nhập list tại đây:</label><br />
       <textarea
@@ -163,10 +164,12 @@ const Home = () => {
               <img src={selectedImage} alt="Sample" />
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
-                  <p className="text-red mb-0 home-name">
+                  <p className="text-red mb-0 homeg-name">
                     {o.product} <br />
-                    <span className="home-price" style={{ color: "black", fontSize: "40px", fontStyle: "italic", fontFamily: " Verdana, Geneva, Tahoma, sans-serif" }}>
-                      Giá: {o.price} Triệu
+                    <span className="homeg-price" style={{
+                      color: "black", fontSize: '30px'
+                    }}>
+                       Giá bán: {o.price} Triệu 
                     </span>
                   </p>
                 </div>
