@@ -40,10 +40,10 @@ const HomeG = () => {
       return { product, price };
     });
     //filter theo gia
-    const filteredResult = result.filter((item) => item.price >=50);//filter giá trên 50tr
-    setFilteredOutput(filteredResult);
+    // const filteredResult = result.filter((item) => item.price >=50);//filter giá trên 50tr
+    // setFilteredOutput(filteredResult);
 
-    setOutput(filteredResult);//truyen vao khi muon filter
+    setOutput(result);//truyen vao khi muon filter
     // setOutput(result);
     originalInputText.current = inputText;
   };

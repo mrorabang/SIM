@@ -24,6 +24,8 @@ function Sort() {
 
     const parseInput = () => {
         const regex = /([\d.]+)\s*=\s*(.+)/g; // phan biet bang dau =
+        // const regex = /([\d.]+)\s*-\s*(.+)/g; // phan biet bang dau -
+        
         const matches = [...inputText.matchAll(regex)];
 
         if (!matches || matches.length === 0) {
