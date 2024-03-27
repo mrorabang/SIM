@@ -1,6 +1,5 @@
 import "./App.css";
 import Contact from "./Contact";
-import Home from "./Home";
 import HomeG from "./HomeG";
 import Security from "./Security";
 import { Routes, Route, Link } from "react-router-dom";
@@ -16,6 +15,7 @@ import {
   MDBNavbarLink,
   MDBCollapse,
 } from 'mdb-react-ui-kit';
+import Sort from "./Sort";
 function App() {
   const [openBasic, setOpenBasic] = useState(false);
 
@@ -42,6 +42,11 @@ function App() {
                 </MDBNavbarLink>
               </MDBNavbarItem>
               <MDBNavbarItem>
+                <MDBNavbarLink active aria-current="page">
+                <Link to="/filter">Filter</Link>
+                </MDBNavbarLink>
+              </MDBNavbarItem>
+              <MDBNavbarItem>
                 <MDBNavbarLink >
                  <Link to="/contact">Liên Hệ</Link>
                 </MDBNavbarLink>
@@ -53,9 +58,9 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Security />} />
-        <Route path="/home9320" element={<Home />} />
         <Route path="/homeg9320" element={<HomeG />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/filter" element={<Sort/>}/>
       </Routes>
     </>
   );

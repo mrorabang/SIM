@@ -20,10 +20,12 @@ const HomeG = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const originalInputText = useRef("");
+  const [filteredOutput, setFilteredOutput] = useState([]);
+
 
   const parseInput = () => {
-    const regex = /([\d.]+)\s*-\s*(.+)/g; // phan biet bang dau -
-    // const regex = /([\d.]+)\s*=\s*(.+)/g; // phan biet bang dau =
+    // const regex = /([\d.]+)\s*-\s*(.+)/g; // phan biet bang dau -
+    const regex = /([\d.]+)\s*=\s*(.+)/g; // phan biet bang dau =
 
     const matches = [...inputText.matchAll(regex)];
 
@@ -37,8 +39,12 @@ const HomeG = () => {
       const price = parseFloat(match[2]);
       return { product, price };
     });
+    //filter theo gia
+    const filteredResult = result.filter((item) => item.price >=50);//filter giá trên 50tr
+    setFilteredOutput(filteredResult);
 
-    setOutput(result);
+    setOutput(filteredResult);//truyen vao khi muon filter
+    // setOutput(result);
     originalInputText.current = inputText;
   };
 
@@ -124,7 +130,7 @@ const HomeG = () => {
                       <div className="fw-bold">{o.product}</div>
                     </div>
                     <MDBBadge pill light>
-                      {o.price} Triệu
+                      {o.price} Triệu <br />
                     </MDBBadge>
                   </MDBListGroupItem>
                 ))}
@@ -157,9 +163,9 @@ const HomeG = () => {
                   <p className="text-red mb-0 homeg-name" >
                     {o.product} <br />
                     <span className="homeg-price" style={{
-                      color: "black", fontSize: '30px'
+                      color: "black", fontSize: '40px'
                     }}>
-                       Giá bán: {o.price} Triệu 
+                      Giá bán: {o.price} Triệu <br /> <span style={{color:'rgb(185, 39, 39)',fontSize:'20px'}}>(Còn bớt lộc)<br />Hỗ Trợ Trả Góp</span>
                     </span>
                   </p>
                 </div>
