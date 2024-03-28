@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MDBListGroup,
   MDBListGroupItem,
@@ -9,7 +9,8 @@ import {
   MDBCol,
   MDBInput,
   MDBFile,
-  MDBIcon
+  MDBIcon, 
+  MDBRadio
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
 import Swal from 'sweetalert2';
@@ -20,13 +21,25 @@ const HomeG = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const originalInputText = useRef("");
-  const [filteredOutput, setFilteredOutput] = useState([]);
+  const [filterType, setFilterType] = useState("=");
+  const [buttonDisabled, setButtonDisabled] = useState(true); // State để kiểm soát trạng thái của nút
 
+  useEffect(() => {
+    // Kiểm tra nội dung của textarea và cập nhật trạng thái của nút
+    if (inputText.trim() === "") {
+      setButtonDisabled(true);
+    } else {
+      setButtonDisabled(false);
+    }
+  }, [inputText]);
 
   const parseInput = () => {
-    // const regex = /([\d.]+)\s*-\s*(.+)/g; // phan biet bang dau -
-    const regex = /([\d.]+)\s*=\s*(.+)/g; // phan biet bang dau =
-
+    let regex;
+    if (filterType === '=') {
+      regex = /([\d.]+)\s*=\s*(.+)/g;
+    } else if (filterType === '-') {
+      regex = /([\d.]+)\s*-\s*(.+)/g;
+    }
     const matches = [...inputText.matchAll(regex)];
 
     if (!matches || matches.length === 0) {
@@ -39,31 +52,21 @@ const HomeG = () => {
       const price = parseFloat(match[2]);
       return { product, price };
     });
-    //filter theo gia
-    // const filteredResult = result.filter((item) => item.price >=50);//filter giá trên 50tr
-    // setFilteredOutput(filteredResult);
 
-    setOutput(result);//truyen vao khi muon filter
-    // setOutput(result);
+    setOutput(result);
     originalInputText.current = inputText;
   };
 
   const handleImageChange = (e) => {
-    // Lấy file từ sự kiện onChange
     const file = e.target.files[0];
-
-    // Kiểm tra xem có file được chọn không
     if (file) {
-      // Kiểm tra định dạng của file (ví dụ: kiểm tra có phải là file hình ảnh không)
       if (file.type.startsWith('image/')) {
-        // Đọc file thành URL dạng base64
         const reader = new FileReader();
         reader.onload = (readerEvent) => {
           setSelectedImage(readerEvent.target.result);
         };
         reader.readAsDataURL(file);
       } else {
-        // Nếu không phải là file hình ảnh, bạn có thể xử lý hoặc thông báo lỗi ở đây
         console.error('Chỉ chấp nhận file hình ảnh.');
       }
     }
@@ -88,7 +91,6 @@ const HomeG = () => {
     Promise.all(downloadPromises).then(() => {
       console.log("Đã tải xuống tất cả ảnh!");
       Swal.fire("Đã tải xuống tất cả ảnh !");
-
     });
   };
 
@@ -109,7 +111,12 @@ const HomeG = () => {
       <div className="upload">
         <MDBFile size='sm' id='formFileSm' onChange={handleImageChange} />
       </div>
-      <MDBBtn onClick={parseInput}>Tách số và Giá Bán</MDBBtn><br /><br />
+      <div className="gr-radio">
+        <MDBRadio name='inlineRadio' id='inlineRadio1' value='<=' checked={filterType === '='} label="Phân cách bởi dấu '=' " inline onChange={() => setFilterType('=')} />
+        <MDBRadio name='inlineRadio' id='inlineRadio2' value='>=' label="Phân cách bởi dấu '-' " inline onChange={() => setFilterType('-')} />
+      </div>
+      {/* Disable nút khi textarea trống */}
+      <MDBBtn disabled={buttonDisabled} onClick={parseInput}>Tách số và Giá Bán</MDBBtn><br /><br />
       <MDBBtn onClick={handleAllImagesButtonClick}>
         <MDBIcon fas icon="download" />
         Tải tất cả ảnh
@@ -144,7 +151,6 @@ const HomeG = () => {
               type="text"
               size="lg"
               value={searchTerm}
-            // onChange={(e) => setSearchTerm(e.target.value)}
             />
           </MDBCol>
         </MDBRow>
@@ -165,7 +171,7 @@ const HomeG = () => {
                     <span className="homeg-price" style={{
                       color: "black", fontSize: '40px'
                     }}>
-                      Giá bán: {o.price} Triệu <br /> <span style={{color:'rgb(185, 39, 39)',fontSize:'20px'}}>(Còn bớt lộc)<br />Hỗ Trợ Trả Góp</span>
+                      Giá bán: {o.price} Triệu <br /> <span style={{ color: 'rgb(185, 39, 39)', fontSize: '20px' }}>(Còn bớt lộc)<br />Hỗ Trợ Trả Góp</span>
                     </span>
                   </p>
                 </div>

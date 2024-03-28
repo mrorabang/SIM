@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     MDBListGroup,
     MDBListGroupItem,
@@ -11,27 +11,27 @@ import {
     MDBRadio,
     MDBInputGroup
 } from "mdb-react-ui-kit";
-import Swal from 'sweetalert2';
 
 function Sort() {
     const [inputText, setInputText] = useState("");
     const [output, setOutput] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
-    const [filterType, setFilterType] = useState(""); // State mới để lưu trữ giá trị được chọn từ ô radio
+    const [filterType, setFilterType] = useState("");
+    const [filterType1, setFilterType1] = useState("");
     const originalInputText = useRef("");
     const [filteredOutput, setFilteredOutput] = useState([]);
+    const [buttonDisabled, setButtonDisabled] = useState(true); // State để kiểm soát trạng thái của nút
 
     const parseInput = () => {
-        const regex = /([\d.]+)\s*=\s*(.+)/g; // phan biet bang dau =
-        // const regex = /([\d.]+)\s*-\s*(.+)/g; // phan biet bang dau -
-        
-        const matches = [...inputText.matchAll(regex)];
-
-        if (!matches || matches.length === 0) {
-            console.log("Không có sản phẩm nào được tìm thấy.");
-            return;
+        let regex;
+        if (filterType1 === '=') {
+            regex = /([\d.]+)\s*=\s*(.+)/g;
+        } else if (filterType1 === '-') {
+            regex = /([\d.]+)\s*-\s*(.+)/g;
         }
+
+        const matches = [...inputText.matchAll(regex)];
 
         const result = matches.map((match) => {
             const product = match[1];
@@ -54,6 +54,19 @@ function Sort() {
         originalInputText.current = inputText;
     };
 
+    // useEffect để kiểm tra nội dung của textarea và cập nhật trạng thái của nút
+    useEffect(() => {
+        if (inputText.trim() === "") {
+            setButtonDisabled(true);
+        } else {
+            setButtonDisabled(false);
+        }
+    }, [inputText]);
+
+    useEffect(() => {
+        setFilterType1('='); // Đảm bảo rằng một giá trị mặc định được chọn khi component được tạo
+    }, []);
+
     return (
         <>
             <div className="App">
@@ -69,6 +82,12 @@ function Sort() {
                     onChange={(e) => setInputText(e.target.value)}
                 ></textarea>
                 <br />
+
+                <div className="gr-radio">
+                    <MDBRadio name='radio' checked={filterType1 === '='} label="Phân cách bởi dấu '=' " inline onChange={() => setFilterType1('=')} />
+                    <MDBRadio name='radio' label="Phân cách bởi dấu '-' " inline onChange={() => setFilterType1('-')} />
+                </div>
+
                 <div className="inputprice mt-3 mb-3">
                     <MDBInput
                         label="Giá đưa vào...(Triệu)"
@@ -81,12 +100,13 @@ function Sort() {
                 </div>
 
                 <div className="gr-radio">
-                    <MDBRadio name='inlineRadio' id='inlineRadio1' value='<=' label='Kết quả nhỏ hơn/bằng giá đưa vào' inline onChange={() => setFilterType('<=')} />
-                    <MDBRadio name='inlineRadio' id='inlineRadio2' value='>=' label='Kết quả lớn hơn/bằng giá đưa vào' inline onChange={() => setFilterType('>=')} />
-                    <MDBRadio name='inlineRadio' id='inlineRadio2' value='=' label=' Kết quả bằng giá đưa vào' inline onChange={() => setFilterType('=')} />
+                    <MDBRadio name='inlineRadio' value='<=' label='Kết quả nhỏ hơn/bằng giá đưa vào' inline onChange={() => setFilterType('<=')} />
+                    <MDBRadio name='inlineRadio' value='>=' label='Kết quả lớn hơn/bằng giá đưa vào' inline onChange={() => setFilterType('>=')} />
+                    <MDBRadio name='inlineRadio' value='=' label=' Kết quả bằng giá đưa vào' inline onChange={() => setFilterType('=')} />
                 </div>
+
                 <br />
-                <MDBBtn onClick={parseInput}>Filter</MDBBtn><br /><br />
+                <MDBBtn disabled={buttonDisabled} onClick={parseInput}>Filter</MDBBtn><br /><br />
                 <hr />
                 <MDBContainer>
                     <MDBRow center>
@@ -112,12 +132,11 @@ function Sort() {
                         </MDBCol>
                         <MDBCol size="4">
                             <strong>Danh sách kết quả</strong>
-
                             <MDBInputGroup>
                                 <textarea
                                     readOnly
                                     className="form-control"
-                                    value={output.map((o,i) => `${o.product} = ${o.price} Triệu`).join("\n")}
+                                    value={output.map((o, i) => `${o.product} = ${o.price} Triệu`).join("\n")}
                                 ></textarea>
                             </MDBInputGroup>
                         </MDBCol>
