@@ -9,8 +9,15 @@ import {
   MDBCol,
   MDBInput,
   MDBFile,
-  MDBIcon, 
-  MDBRadio
+  MDBIcon,
+  MDBRadio,
+  MDBModal,
+  MDBModalDialog,
+  MDBModalContent,
+  MDBModalHeader,
+  MDBModalTitle,
+  MDBModalBody,
+  MDBModalFooter
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
 import Swal from 'sweetalert2';
@@ -18,12 +25,12 @@ import Swal from 'sweetalert2';
 const HomeG = () => {
   const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const originalInputText = useRef("");
   const [filterType, setFilterType] = useState("=");
   const [buttonDisabled, setButtonDisabled] = useState(true); // State để kiểm soát trạng thái của nút
-
+  const [passwordModalOpen, setPasswordModalOpen] = useState(true);
+  const [password, setPassword] = useState("");
   useEffect(() => {
     // Kiểm tra nội dung của textarea và cập nhật trạng thái của nút
     if (inputText.trim() === "") {
@@ -94,6 +101,16 @@ const HomeG = () => {
     });
   };
 
+  // Trong phần xử lý xác thực
+  const handlePasswordSubmit = () => {
+    if (password === "9320") {
+      setPasswordModalOpen(false);
+    } else {
+      alert("Mật khẩu không đúng. Vui lòng thử lại.");
+    }
+  };
+
+
   return (
     <div className="App">
       <div className="header">
@@ -115,7 +132,6 @@ const HomeG = () => {
         <MDBRadio name='inlineRadio' id='inlineRadio1' value='<=' checked={filterType === '='} label="Phân cách bởi dấu '=' " inline onChange={() => setFilterType('=')} />
         <MDBRadio name='inlineRadio' id='inlineRadio2' value='>=' label="Phân cách bởi dấu '-' " inline onChange={() => setFilterType('-')} />
       </div>
-      {/* Disable nút khi textarea trống */}
       <MDBBtn disabled={buttonDisabled} onClick={parseInput}>Tách số và Giá Bán</MDBBtn><br /><br />
       <MDBBtn onClick={handleAllImagesButtonClick}>
         <MDBIcon fas icon="download" />
@@ -150,7 +166,6 @@ const HomeG = () => {
               id="formControlLg"
               type="text"
               size="lg"
-              value={searchTerm}
             />
           </MDBCol>
         </MDBRow>
@@ -163,7 +178,6 @@ const HomeG = () => {
           <div className="gr-img">
             <label className="bg-image label-img" id={`imageContainer-${index}`}>
               <img src={selectedImage} alt="Sample" />
-              {/* set hình vuông có kích thước 736*736 */}
               <div className="mask">
                 <div className="d-flex justify-content-center align-items-center h-100">
                   <p className="text-red mb-0 homeg-name" >
@@ -181,6 +195,26 @@ const HomeG = () => {
           <br /><br /><br />
         </div>
       ))}
+      <MDBModal open={passwordModalOpen} tabIndex='-1'>
+        <MDBModalDialog>
+          <MDBModalContent>
+            <MDBModalHeader>
+              <MDBModalTitle>Nhập mật khẩu</MDBModalTitle>
+            </MDBModalHeader>
+            <MDBModalBody>
+              <MDBInput
+                label='Nhập mật khẩu'
+                type='password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </MDBModalBody>
+            <MDBModalFooter>
+              <MDBBtn onClick={handlePasswordSubmit}>OK</MDBBtn>
+            </MDBModalFooter>
+          </MDBModalContent>
+        </MDBModalDialog>
+      </MDBModal>
     </div>
   );
 };

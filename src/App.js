@@ -1,9 +1,8 @@
 import "./App.css";
 import Contact from "./Contact";
 import HomeG from "./HomeG";
-import Security from "./Security";
 import { Routes, Route, Link } from "react-router-dom";
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   MDBContainer,
   MDBNavbar,
@@ -14,7 +13,7 @@ import {
   MDBNavbarItem,
   MDBNavbarLink,
   MDBCollapse,
-} from 'mdb-react-ui-kit';
+} from "mdb-react-ui-kit";
 import Sort from "./Sort";
 function App() {
   const [openBasic, setOpenBasic] = useState(false);
@@ -24,7 +23,7 @@ function App() {
       <MDBNavbar expand="lg" light bgColor="light" className="fixed-top">
         <MDBContainer fluid>
           <MDBNavbarBrand>
-            <img src="./img/logo1.png" width={'110px'} alt="" />
+            <img src="./img/logo1.png" width={"110px"} alt="" />
           </MDBNavbarBrand>
           <MDBNavbarToggler
             aria-controls="navbarSupportedContent"
@@ -37,30 +36,49 @@ function App() {
           <MDBCollapse navbar open={openBasic}>
             <MDBNavbarNav className="mr-auto mb-2 mb-lg-0">
               <MDBNavbarItem>
-                <MDBNavbarLink active aria-current="page">
-                <Link to="/homeg9320">Create Picture</Link>
-                </MDBNavbarLink>
+                <div className="navbar-link-container">
+                  <MDBNavbarLink
+                    active
+                    aria-current="page"
+                    className="nav-link"
+                  >
+                    <Link to="/">Create Picture</Link>
+                  </MDBNavbarLink>
+                </div>
               </MDBNavbarItem>
+
               <MDBNavbarItem>
-                <MDBNavbarLink active aria-current="page">
-                <Link to="/filter">Filter</Link>
-                </MDBNavbarLink>
+                <div className="navbar-link-container">
+                  <MDBNavbarLink
+                    active
+                    aria-current="page"
+                    className="nav-link"
+                  >
+                    <Link to="/filter">Filter</Link>
+                  </MDBNavbarLink>
+                </div>
               </MDBNavbarItem>
+
               <MDBNavbarItem>
-                <MDBNavbarLink >
-                 <Link to="/contact">Liên Hệ</Link>
-                </MDBNavbarLink>
+                <div className="navbar-link-container">
+                  <MDBNavbarLink
+                    active
+                    aria-current="page"
+                    className="nav-link"
+                  >
+                    <Link to="/contact">Contact</Link>
+                  </MDBNavbarLink>
+                </div>
               </MDBNavbarItem>
             </MDBNavbarNav>
           </MDBCollapse>
         </MDBContainer>
-      </MDBNavbar> 
+      </MDBNavbar>
 
       <Routes>
-        <Route path="/" element={<Security />} />
-        <Route path="/homeg9320" element={<HomeG />} />
+        <Route path="/" element={<HomeG />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/filter" element={<Sort/>}/>
+        <Route path="/filter" element={<Sort />} />
       </Routes>
     </>
   );
