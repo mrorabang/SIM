@@ -10,18 +10,11 @@ import {
   MDBInput,
   MDBFile,
   MDBIcon,
-  MDBRadio,
-  MDBModal,
-  MDBModalDialog,
-  MDBModalContent,
-  MDBModalHeader,
-  MDBModalTitle,
-  MDBModalBody,
-  MDBModalFooter
+  MDBRadio
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
 import Swal from 'sweetalert2';
-import SecurityModal from "./SecurityModal";
+import "../App.css";
 
 const CreateImage = () => {
   const [inputText, setInputText] = useState("");
@@ -111,6 +104,7 @@ const CreateImage = () => {
         id="inputText"
         cols="30"
         rows="5"
+        placeholder="Dán list tại đây..."
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
       ></textarea>
@@ -185,7 +179,7 @@ const CreateImage = () => {
           <br /><br /><br />
         </div>
       ))}
-      <SecurityModal/>
+      {/*<SecurityModal/>*/}
     </div>
   );
 };

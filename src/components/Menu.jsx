@@ -1,76 +1,88 @@
 import {
+    MDBBtn,
     MDBCollapse,
     MDBContainer,
     MDBIcon,
     MDBNavbar,
-    MDBNavbarBrand, MDBNavbarItem, MDBNavbarLink,
+    MDBNavbarBrand,
+    MDBNavbarItem,
+    MDBNavbarLink,
     MDBNavbarNav,
     MDBNavbarToggler
 } from "mdb-react-ui-kit";
-import {Link} from "react-router-dom";
-import React, {useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
+import React, { useState } from "react";
+import {showConfirm} from "../service/AlertServices";
+import {showAlert} from "../service/AlertServices";
 
 function Menu() {
     const [openBasic, setOpenBasic] = useState(false);
+    const username=localStorage.getItem("username");
+    const nav = useNavigate();
+    //xu ly logout
+    const handleLogout = async () => {
+        const confirm = await showConfirm("Are you sure?", "warning");
+        if (confirm) {
+            localStorage.clear();
+            nav("/login");
+            showAlert("Đã đăng xuất!", "success");
+        }
+    };
+
 
     return (
         <>
             <MDBNavbar expand="lg" light bgColor="light" className="fixed-top">
                 <MDBContainer fluid>
                     <MDBNavbarBrand>
-                        <img src="./img/logo1.png" width={"110px"} alt=""/>
+                        <img src="./img/logo1.png" width={"110px"} alt="" />
                     </MDBNavbarBrand>
+
                     <MDBNavbarToggler
                         aria-controls="navbarSupportedContent"
                         aria-expanded="false"
                         aria-label="Toggle navigation"
                         onClick={() => setOpenBasic(!openBasic)}
                     >
-                        <MDBIcon icon="bars" fas/>
+                        <MDBIcon icon="bars" fas />
                     </MDBNavbarToggler>
+
                     <MDBCollapse navbar open={openBasic}>
-                        <MDBNavbarNav className="mr-auto mb-2 mb-lg-0">
+                        <MDBNavbarNav className="me-auto mb-2 mb-lg-0">
                             <MDBNavbarItem>
-                                <div className="navbar-link-container">
-                                    <MDBNavbarLink
-                                        active
-                                        aria-current="page"
-                                        className="nav-link"
-                                    >
-                                        <Link to="/">Create Picture</Link>
-                                    </MDBNavbarLink>
-                                </div>
+                                <MDBNavbarLink>
+                                    <Link to="/create">Create Picture</Link>
+                                </MDBNavbarLink>
                             </MDBNavbarItem>
 
                             <MDBNavbarItem>
-                                <div className="navbar-link-container">
-                                    <MDBNavbarLink
-                                        active
-                                        aria-current="page"
-                                        className="nav-link"
-                                    >
-                                        <Link to="/filter">Filter</Link>
-                                    </MDBNavbarLink>
-                                </div>
+                                <MDBNavbarLink>
+                                    <Link to="/filter">Filter</Link>
+                                </MDBNavbarLink>
                             </MDBNavbarItem>
 
                             <MDBNavbarItem>
-                                <div className="navbar-link-container">
-                                    <MDBNavbarLink
-                                        active
-                                        aria-current="page"
-                                        className="nav-link"
-                                    >
-                                        <Link to="/contact">Contact</Link>
-                                    </MDBNavbarLink>
-                                </div>
+                                <MDBNavbarLink>
+                                    <Link to="/contact">Contact</Link>
+                                </MDBNavbarLink>
                             </MDBNavbarItem>
                         </MDBNavbarNav>
+
+                        {/* 👇 Admin icon bên phải */}
+                        <MDBBtn
+                            color="danger"
+                            className="ms-auto d-flex align-items-center"
+                            onClick={handleLogout}
+                            style={{ gap: "0.5rem" }}
+                        >
+                            <span className="fw-bold">{username}</span>
+                            <MDBIcon icon="sign-out-alt" />
+                        </MDBBtn>
                     </MDBCollapse>
                 </MDBContainer>
             </MDBNavbar>
         </>
-    )
+    );
 }
 
 export default Menu;

@@ -79,6 +79,7 @@ function Filter() {
                     cols="30"
                     rows="5"
                     value={inputText}
+                    placeholder="Dán list tại đây..."
                     onChange={(e) => setInputText(e.target.value)}
                 ></textarea>
                 <br />
