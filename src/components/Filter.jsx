@@ -12,7 +12,7 @@ import {
     MDBInputGroup
 } from "mdb-react-ui-kit";
 
-function Sort() {
+function Filter() {
     const [inputText, setInputText] = useState("");
     const [output, setOutput] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -148,4 +148,4 @@ function Sort() {
     );
 }
 
-export default Sort;
+export default Filter;

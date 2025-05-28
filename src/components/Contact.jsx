@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MDBInputGroup, MDBIcon, MDBInput, MDBBtn } from "mdb-react-ui-kit";
+import showAlert from "../config/showAlert";
 
 function Contact() {
     const [name, setName] = useState("");
@@ -15,13 +16,14 @@ function Contact() {
         const mailtoLink = `mailto:dangminhquan9320@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
         // Mở liên kết mailto trong cửa sổ mới
-        window.location.href = mailtoLink;
+        // window.location.href = mailtoLink;
 
         // Xóa nội dung của tên, số điện thoại và message sau khi gửi
         setName("");
         setPhoneNumber("");
         setMessage("");
-        alert('Góp ý thành công!')
+        showAlert('Chức năng đang phát triển!',"info")
+        return;
     };
 
     return (

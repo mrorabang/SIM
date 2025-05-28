@@ -21,16 +21,16 @@ import {
 } from "mdb-react-ui-kit";
 import html2canvas from "html2canvas";
 import Swal from 'sweetalert2';
+import SecurityModal from "./SecurityModal";
 
-const HomeG = () => {
+const CreateImage = () => {
   const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const originalInputText = useRef("");
   const [filterType, setFilterType] = useState("=");
   const [buttonDisabled, setButtonDisabled] = useState(true); // State để kiểm soát trạng thái của nút
-  const [passwordModalOpen, setPasswordModalOpen] = useState(true);
-  const [password, setPassword] = useState("");
+
   useEffect(() => {
     // Kiểm tra nội dung của textarea và cập nhật trạng thái của nút
     if (inputText.trim() === "") {
@@ -100,16 +100,6 @@ const HomeG = () => {
       Swal.fire("Đã tải xuống tất cả ảnh !");
     });
   };
-
-  // Trong phần xử lý xác thực
-  const handlePasswordSubmit = () => {
-    if (password === "9320") {
-      setPasswordModalOpen(false);
-    } else {
-      alert("Mật khẩu không đúng. Vui lòng thử lại.");
-    }
-  };
-
 
   return (
     <div className="App">
@@ -195,28 +185,9 @@ const HomeG = () => {
           <br /><br /><br />
         </div>
       ))}
-      <MDBModal open={passwordModalOpen} tabIndex='-1'>
-        <MDBModalDialog>
-          <MDBModalContent>
-            <MDBModalHeader>
-              <MDBModalTitle>Nhập mật khẩu</MDBModalTitle>
-            </MDBModalHeader>
-            <MDBModalBody>
-              <MDBInput
-                label='Nhập mật khẩu'
-                type='password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </MDBModalBody>
-            <MDBModalFooter>
-              <MDBBtn onClick={handlePasswordSubmit}>OK</MDBBtn>
-            </MDBModalFooter>
-          </MDBModalContent>
-        </MDBModalDialog>
-      </MDBModal>
+      <SecurityModal/>
     </div>
   );
 };
 
-export default HomeG;
+export default CreateImage;
