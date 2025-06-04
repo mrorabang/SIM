@@ -29,6 +29,7 @@ function LoginPage() {
             setAccounts(data);
         }
         fetchData();
+
         }, []);
 
 
@@ -40,12 +41,17 @@ function LoginPage() {
             return;
         }
 
+        if (!found.status) {
+            showAlert("Tài khoản đã bị cấm, vui lòng liên hệ quản trị viên!", "danger");
+            return;
+        }
+
         const isPasswordCorrect = await bcrypt.compare(password, found.password);
-        console.log(isPasswordCorrect);
         if (isPasswordCorrect) {
             showAlert("Đăng nhập thành công", "success");
             localStorage.setItem("authenticated", "true");
-            localStorage.setItem("username", found.username);
+            localStorage.setItem("fullname", found.fullname);
+            localStorage.setItem("role", found.role);
             nav('/create');
         } else {
             showAlert("Sai tài khoản hoặc mật khẩu", "error");

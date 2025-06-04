@@ -7,6 +7,8 @@ import ProtectedRoute from "./service/ProtectedRoute";
 import Menu from "./components/Menu";
 import NotFound from "./components/NotFound";
 import Chat from "./components/Chat";
+import AccountManagement from "./components/AccountManagement";
+import CreateAccount from "./components/CreateAccount";
 
 function App() {
     return (
@@ -38,6 +40,20 @@ function App() {
                     <ProtectedRoute>
                         <Menu/>
                         <Chat />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/account" element={
+                    <ProtectedRoute>
+                        <Menu/>
+                        <AccountManagement />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/new" element={
+                    <ProtectedRoute>
+                        <Menu/>
+                        <CreateAccount />
                     </ProtectedRoute>
                 } />
                 <Route path="*" element={<NotFound />} />

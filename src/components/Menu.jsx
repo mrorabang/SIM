@@ -11,13 +11,14 @@ import {
     MDBNavbarToggler
 } from "mdb-react-ui-kit";
 import {Link, useNavigate} from "react-router-dom";
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {showConfirm} from "../service/AlertServices";
 import {showAlert} from "../service/AlertServices";
 
 function Menu() {
     const [openBasic, setOpenBasic] = useState(false);
-    const username=localStorage.getItem("username");
+    const fullname = localStorage.getItem("fullname");
+    const role = localStorage.getItem("role");
     const nav = useNavigate();
     //xu ly logout
     const handleLogout = async () => {
@@ -35,7 +36,7 @@ function Menu() {
             <MDBNavbar expand="lg" light bgColor="light" className="fixed-top">
                 <MDBContainer fluid>
                     <MDBNavbarBrand>
-                        <img src="./img/logo1.png" width={"110px"} alt="" />
+                        <img src="./img/logo1.png" width={"110px"} alt=""/>
                     </MDBNavbarBrand>
 
                     <MDBNavbarToggler
@@ -44,7 +45,7 @@ function Menu() {
                         aria-label="Toggle navigation"
                         onClick={() => setOpenBasic(!openBasic)}
                     >
-                        <MDBIcon icon="bars" fas />
+                        <MDBIcon icon="bars" fas/>
                     </MDBNavbarToggler>
 
                     <MDBCollapse navbar open={openBasic}>
@@ -62,9 +63,11 @@ function Menu() {
                             </MDBNavbarItem>
 
                             <MDBNavbarItem>
-                                <MDBNavbarLink>
-                                    <Link to="/contact">Contact</Link>
-                                </MDBNavbarLink>
+                                {role === "ADMIN" && (
+                                    <MDBNavbarLink>
+                                        <Link to="/account">Account Management</Link>
+                                    </MDBNavbarLink>
+                                )}
                             </MDBNavbarItem>
 
                             <MDBNavbarItem>
@@ -72,17 +75,23 @@ function Menu() {
                                     <Link to="/chat">Chat with AI</Link>
                                 </MDBNavbarLink>
                             </MDBNavbarItem>
+
+                            <MDBNavbarItem>
+                                <MDBNavbarLink>
+                                    <Link to="/contact">Contact</Link>
+                                </MDBNavbarLink>
+                            </MDBNavbarItem>
+
                         </MDBNavbarNav>
 
-                        {/* 👇 Admin icon bên phải */}
                         <MDBBtn
                             color="danger"
                             className="ms-auto d-flex align-items-center"
                             onClick={handleLogout}
-                            style={{ gap: "0.5rem" }}
+                            style={{gap: "0.5rem"}}
                         >
-                            <span className="fw-bold">{username}</span>
-                            <MDBIcon icon="sign-out-alt" />
+                            <span className="fw-bold" style={{ whiteSpace: "nowrap" }}>{fullname}</span>
+                            <MDBIcon icon="sign-out-alt"/>
                         </MDBBtn>
                     </MDBCollapse>
                 </MDBContainer>
