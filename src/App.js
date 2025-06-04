@@ -6,6 +6,7 @@ import LoginPage from "./components/LoginPage";
 import ProtectedRoute from "./service/ProtectedRoute";
 import Menu from "./components/Menu";
 import NotFound from "./components/NotFound";
+import Chat from "./components/Chat";
 
 function App() {
     return (
@@ -33,8 +34,14 @@ function App() {
                         <Filter />
                     </ProtectedRoute>
                 }/>
-
+                <Route path="/chat" element={
+                    <ProtectedRoute>
+                        <Menu/>
+                        <Chat />
+                    </ProtectedRoute>
+                } />
                 <Route path="*" element={<NotFound />} />
+
             </Routes>
         </>
 

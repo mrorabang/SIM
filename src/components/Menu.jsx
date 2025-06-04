@@ -66,6 +66,12 @@ function Menu() {
                                     <Link to="/contact">Contact</Link>
                                 </MDBNavbarLink>
                             </MDBNavbarItem>
+
+                            <MDBNavbarItem>
+                                <MDBNavbarLink>
+                                    <Link to="/chat">Chat with AI</Link>
+                                </MDBNavbarLink>
+                            </MDBNavbarItem>
                         </MDBNavbarNav>
 
                         {/* 👇 Admin icon bên phải */}

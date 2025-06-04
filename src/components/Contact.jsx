@@ -9,19 +9,6 @@ function Contact() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        // Tạo nội dung thư
-        // const subject = "New Contact Form Submission";
-        // const body = `From: ${name}\nSố điện thoại: ${phoneNumber}\n\n${message}`;
-        // // const mailtoLink = `mailto:dangminhquan9320@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-        // Mở liên kết mailto trong cửa sổ mới
-        // window.location.href = mailtoLink;
-
-        // Xóa nội dung của tên, số điện thoại và message sau khi gửi
-        setName("");
-        setPhoneNumber("");
-        setMessage("");
         showAlert('Chức năng đang phát triển!',"info")
         return;
     };

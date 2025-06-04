@@ -1,14 +1,17 @@
 {
   "name": "ql_sim",
-  "homepage": ".",
+  "homepage": "https://mrorabang.github.io/SIM",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@expo-google-fonts/anton": "^0.2.3",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@minchat/react-chat-ui": "^0.16.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@xenova/transformers": "^2.17.2",
+    "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
     "bootstrap": "^5.3.2",
     "gh-pages": "^6.1.0",
