@@ -8,6 +8,21 @@ export const getAccounts = async () => {
     return await res.json();
 };
 
+export const getAccount = async (id) => {
+    try {
+        const response = await fetch(`https://683dc621199a0039e9e6d42d.mockapi.io/accounts/${id}`);
+
+        if (!response.ok) {
+            throw new Error("Không thể lấy thông tin tài khoản!");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Lỗi khi lấy tài khoản:", error);
+        return null;
+    }
+};
+
 
 // api/accounts.js
 export const changeStatusAPI = async (id, currentStatus) => {
@@ -58,5 +73,43 @@ export const checkUsernameExists = async (username) => {
     }
 };
 
+export const deleteAccount = async (id) => {
+    try {
+        const response = await fetch(`https://683dc621199a0039e9e6d42d.mockapi.io/accounts/${id}`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            throw new Error("Không thể xóa tài khoản!");
+        }
+        showAlert("Xóa tài khoản thành công!", "success");
+        return true;
+    } catch (error) {
+        console.error("Lỗi khi xóa tài khoản:", error);
+        showAlert("Lỗi khi xóa tài khoản, vui lòng thử lại!", "danger");
+        return false;
+    }
+};
 
+export const changePassword = async (id, data) => {
+    try {
+        const response = await fetch(`https://683dc621199a0039e9e6d42d.mockapi.io/accounts/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            showAlert("Không thể cập nhật tài khoản!", "warning");
+            return null;
+        }
+        showAlert("Update successful!", "success");
+        localStorage.setItem("user", JSON.stringify(data));
+        console.log(localStorage.getItem("user"));
+        return await response.json();
+
+    } catch (error) {
+        console.error("Lỗi khi cập nhật tài khoản:", error);
+        return null;
+    }
+};
 

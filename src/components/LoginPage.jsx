@@ -49,9 +49,9 @@ function LoginPage() {
         const isPasswordCorrect = await bcrypt.compare(password, found.password);
         if (isPasswordCorrect) {
             showAlert("Đăng nhập thành công", "success");
+            localStorage.setItem("user",JSON.stringify(found));
             localStorage.setItem("authenticated", "true");
-            localStorage.setItem("fullname", found.fullname);
-            localStorage.setItem("role", found.role);
+            console.log(localStorage.getItem("user"));
             nav('/create');
         } else {
             showAlert("Sai tài khoản hoặc mật khẩu", "error");

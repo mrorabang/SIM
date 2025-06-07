@@ -4,11 +4,12 @@ import CreateImage from "./service/CreateImage";
 import Filter from "./components/Filter";
 import LoginPage from "./components/LoginPage";
 import ProtectedRoute from "./service/ProtectedRoute";
-import Menu from "./components/Menu";
+import Menu from "./layout/Menu";
 import NotFound from "./components/NotFound";
 import Chat from "./components/Chat";
 import AccountManagement from "./components/AccountManagement";
 import CreateAccount from "./components/CreateAccount";
+import Profile from "./components/Profile";
 
 function App() {
     return (
@@ -44,18 +45,26 @@ function App() {
                 } />
 
                 <Route path="/account" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute adminOnly={true}>
                         <Menu/>
                         <AccountManagement />
                     </ProtectedRoute>
                 } />
 
                 <Route path="/new" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute adminOnly={true}>
                         <Menu/>
                         <CreateAccount />
                     </ProtectedRoute>
                 } />
+
+                <Route path="/profile" element={
+                    <ProtectedRoute>
+                        <Menu/>
+                        <Profile />
+                    </ProtectedRoute>
+                } />
+
                 <Route path="*" element={<NotFound />} />
 
             </Routes>

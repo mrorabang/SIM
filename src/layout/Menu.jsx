@@ -8,21 +8,20 @@ import {
     MDBNavbarItem,
     MDBNavbarLink,
     MDBNavbarNav,
-    MDBNavbarToggler
+    MDBNavbarToggler, MDBTooltip
 } from "mdb-react-ui-kit";
 import {Link, useNavigate} from "react-router-dom";
 import React, {useState} from "react";
-import {showConfirm} from "../service/AlertServices";
-import {showAlert} from "../service/AlertServices";
+import {showConfirm, showAlert} from "../service/AlertServices";
 
 function Menu() {
     const [openBasic, setOpenBasic] = useState(false);
-    const fullname = localStorage.getItem("fullname");
-    const role = localStorage.getItem("role");
+    const user = JSON.parse(localStorage.getItem("user"));
     const nav = useNavigate();
-    //xu ly logout
+
+    // Xử lý logout
     const handleLogout = async () => {
-        const confirm = await showConfirm("Are you sure?", "warning");
+        const confirm = await showConfirm("Bạn có chắc chắn muốn đăng xuất?", "warning");
         if (confirm) {
             localStorage.clear();
             nav("/login");
@@ -30,13 +29,12 @@ function Menu() {
         }
     };
 
-
     return (
         <>
             <MDBNavbar expand="lg" light bgColor="light" className="fixed-top">
                 <MDBContainer fluid>
                     <MDBNavbarBrand>
-                        <img src="./img/logo1.png" width={"110px"} alt=""/>
+                        <img src="./img/logo1.png" width={"110px"} alt="Logo"/>
                     </MDBNavbarBrand>
 
                     <MDBNavbarToggler
@@ -63,7 +61,7 @@ function Menu() {
                             </MDBNavbarItem>
 
                             <MDBNavbarItem>
-                                {role === "ADMIN" && (
+                                {user.role === "ADMIN" && (
                                     <MDBNavbarLink>
                                         <Link to="/account">Account Management</Link>
                                     </MDBNavbarLink>
@@ -81,17 +79,24 @@ function Menu() {
                                     <Link to="/contact">Contact</Link>
                                 </MDBNavbarLink>
                             </MDBNavbarItem>
-
                         </MDBNavbarNav>
 
-                        <MDBBtn
-                            color="danger"
-                            className="ms-auto d-flex align-items-center"
-                            onClick={handleLogout}
-                            style={{gap: "0.5rem"}}
-                        >
-                            <span className="fw-bold" style={{ whiteSpace: "nowrap" }}>{fullname}</span>
-                            <MDBIcon icon="sign-out-alt"/>
+                        {/* Hiển thị Full Name bên trái Avatar */}
+                        <MDBTooltip tag="span" title={user.fullname} placement="bottom">
+                            <MDBIcon
+                                fas
+                                icon="user-circle"
+                                size="2x"
+                                className="cursor-pointer me-3"
+                                onClick={() => nav("/profile")}
+                            />
+                        </MDBTooltip>
+
+
+
+
+                        <MDBBtn color="danger" onClick={handleLogout} size="sm">
+                            <MDBIcon fas icon="sign-out-alt"/>
                         </MDBBtn>
                     </MDBCollapse>
                 </MDBContainer>

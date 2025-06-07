@@ -41,7 +41,12 @@ function CreateAccount() {
     return (
         <div className="">
             <div className="container mt-5">
-                <form onSubmit={handleSubmit(onSubmit)} className="p-4 shadow rounded">
+                <div className="text-start">
+                    <button className="btn btn-dark mt-3 mb-2" onClick={() => nav('/account')}>
+                        Back
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit(onSubmit)} className="p-4 mt-1 shadow rounded">
 
                     <div className="mb-3">
                         <label className="fw-bold">Full Name</label>
