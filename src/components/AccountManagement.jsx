@@ -90,7 +90,7 @@ function AccountManagement() {
                                 >
                                     {account.status ? "Ban" : "Activate"}
                                 </button>
-a
+
                                 {/* Nút xóa tài khoản */}
                                 <button
                                     onClick={() => handleDelete(account.id)}
