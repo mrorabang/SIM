@@ -23,6 +23,7 @@ const CreateImage = () => {
   const originalInputText = useRef("");
   const [filterType, setFilterType] = useState("=");
   const [buttonDisabled, setButtonDisabled] = useState(true); // State để kiểm soát trạng thái của nút
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     // Kiểm tra nội dung của textarea và cập nhật trạng thái của nút
@@ -128,29 +129,37 @@ const CreateImage = () => {
             <div className="result">
               <strong>Kết quả ( {output.length} số ) :</strong>
               <MDBListGroup numbered style={{ maxWidth: "26rem" }} light>
-                {output.map((o, index) => (
-                  <MDBListGroupItem
-                    key={index}
-                    className="d-flex justify-content-between align-items-center"
-                  >
-                    <div className="ms-2 me-auto">
-                      <div className="fw-bold">{o.product}</div>
-                    </div>
-                    <MDBBadge pill light>
-                      {o.price} Triệu <br />
-                    </MDBBadge>
-                  </MDBListGroupItem>
-                ))}
+                {output
+                    .filter((o) =>
+                        o.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        o.price.toString().includes(searchTerm) // cho phép tìm theo số giá
+                    )
+                    .map((o, index) => (
+                        <MDBListGroupItem
+                            key={index}
+                            className="d-flex justify-content-between align-items-center"
+                        >
+                          <div className="ms-2 me-auto">
+                            <div className="fw-bold">{o.product}</div>
+                          </div>
+                          <MDBBadge pill light>
+                            {o.price} Triệu <br />
+                          </MDBBadge>
+                        </MDBListGroupItem>
+                    ))}
               </MDBListGroup>
             </div>
           </MDBCol>
           <MDBCol size="4">
             <MDBInput
-              label="Tìm số trong kết quả"
-              id="formControlLg"
-              type="text"
-              size="lg"
+                label="Tìm số trong kết quả"
+                id="formControlLg"
+                type="text"
+                size="lg"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
             />
+
           </MDBCol>
         </MDBRow>
       </MDBContainer>

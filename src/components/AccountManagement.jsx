@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ReactPaginate from "react-paginate"; // Import React Paginate
+import ReactPaginate from "react-paginate";
 import { MDBTable, MDBTableHead, MDBTableBody } from "mdb-react-ui-kit";
 import {changeStatusAPI, deleteAccount, getAccounts} from "../api/Accounts";
 import {showAlert, showConfirm} from "../service/AlertServices";
@@ -47,8 +47,6 @@ function AccountManagement() {
         }
     };
 
-
-    // Tính toán dữ liệu phân trang
     const offset = currentPage * itemsPerPage;
     const currentPageData = accounts.slice(offset, offset + itemsPerPage);
 
