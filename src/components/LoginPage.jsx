@@ -20,6 +20,7 @@ function LoginPage() {
     const [accounts, setAccounts] = useState([]);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const nav = useNavigate();
 
     // Lấy dữ liệu accounts từ API
@@ -52,10 +53,22 @@ function LoginPage() {
             localStorage.setItem("user",JSON.stringify(found));
             localStorage.setItem("authenticated", "true");
             console.log(localStorage.getItem("user"));
-            nav('/create');
+            nav('/sim-generator');
         } else {
             showAlert("Sai tài khoản hoặc mật khẩu", "error");
         }
+    };
+
+    // Xử lý phím Enter
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    };
+
+    // Toggle password visibility
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
 
@@ -87,15 +100,39 @@ function LoginPage() {
                                 type='text'
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
+                                onKeyPress={handleKeyPress}
                             />
-                            <MDBInput
-                                wrapperClass='mb-4'
-                                label='Password'
-                                id='password'
-                                type='password'
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
+                            
+                            <div className='mb-4 position-relative'>
+                                <MDBInput
+                                    label='Password'
+                                    id='password'
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn btn-link position-absolute"
+                                    style={{
+                                        right: '10px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        border: 'none',
+                                        background: 'none',
+                                        padding: '0',
+                                        zIndex: '10'
+                                    }}
+                                    onClick={togglePasswordVisibility}
+                                >
+                                    <MDBIcon 
+                                        icon={showPassword ? 'eye-slash' : 'eye'} 
+                                        size="sm"
+                                        style={{ color: '#6c757d' }}
+                                    />
+                                </button>
+                            </div>
 
                             <div className='d-flex justify-content-center mb-4'>
                                 <MDBCheckbox name='flexCheck' value='' id='flexCheckDefault' label='Remember me'/>

@@ -102,7 +102,8 @@ export const changePassword = async (id, data) => {
             showAlert("Không thể cập nhật tài khoản!", "warning");
             return null;
         }
-        showAlert("Update successful!", "success");
+        // Bỏ thông báo "Update successful!" để tránh trùng lặp với thông báo upload avatar
+        // showAlert("Update successful!", "success");
         localStorage.setItem("user", JSON.stringify(data));
         console.log(localStorage.getItem("user"));
         return await response.json();

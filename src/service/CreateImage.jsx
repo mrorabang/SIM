@@ -1,196 +1,112 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  MDBListGroup,
-  MDBListGroupItem,
-  MDBBadge,
-  MDBBtn,
-  MDBContainer,
-  MDBRow,
-  MDBCol,
-  MDBInput,
-  MDBFile,
-  MDBIcon,
-  MDBRadio
-} from "mdb-react-ui-kit";
-import html2canvas from "html2canvas";
-import Swal from 'sweetalert2';
-import "../App.css";
+import React, { useState, useRef } from "react";
+import { Stage, Layer, Text, Image as KonvaImage } from "react-konva";
+import useImage from "use-image";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
-const CreateImage = () => {
+function BackgroundImage({ src, width, height }) {
+  const [image] = useImage(src);
+  return <KonvaImage image={image} width={width} height={height} />;
+}
+
+export default function CreateImageList() {
   const [inputText, setInputText] = useState("");
-  const [output, setOutput] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const originalInputText = useRef("");
-  const [filterType, setFilterType] = useState("=");
-  const [buttonDisabled, setButtonDisabled] = useState(true); // State để kiểm soát trạng thái của nút
-  const [searchTerm, setSearchTerm] = useState("");
+  const [bgSrc, setBgSrc] = useState(null);
+  const stageRefs = useRef([]);
 
-  useEffect(() => {
-    // Kiểm tra nội dung của textarea và cập nhật trạng thái của nút
-    if (inputText.trim() === "") {
-      setButtonDisabled(true);
-    } else {
-      setButtonDisabled(false);
-    }
-  }, [inputText]);
-
-  const parseInput = () => {
-    let regex;
-    if (filterType === '=') {
-      regex = /([\d.]+)\s*=\s*(.+)/g;
-    } else if (filterType === '-') {
-      regex = /([\d.]+)\s*-\s*(.+)/g;
-    }
-    const matches = [...inputText.matchAll(regex)];
-
-    if (!matches || matches.length === 0) {
-      console.log("Không có sản phẩm nào được tìm thấy.");
-      return;
-    }
-
-    const result = matches.map((match) => {
-      const product = match[1];
-      const price = parseFloat(match[2]);
-      return { product, price };
-    });
-
-    setOutput(result);
-    originalInputText.current = inputText;
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (readerEvent) => {
-          setSelectedImage(readerEvent.target.result);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        console.error('Chỉ chấp nhận file hình ảnh.');
-      }
-    }
-  };
-
-  const handleAllImagesButtonClick = () => {
-    const downloadPromises = [];
-
-    output.forEach((o, index) => {
-      const container = document.getElementById(`imageContainer-${index}`);
-      const downloadPromise = html2canvas(container).then((canvas) => {
-        const imgUrl = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.href = imgUrl;
-        link.download = `Sim_${index + 1}.png`;
-        link.click();
+  const parseList = () => {
+    return inputText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => {
+        let [phone, price] = line.split("=");
+        return { phone: phone.trim(), price: price?.trim() || "" };
       });
-
-      downloadPromises.push(downloadPromise);
-    });
-
-    Promise.all(downloadPromises).then(() => {
-      console.log("Đã tải xuống tất cả ảnh!");
-      Swal.fire("Đã tải xuống tất cả ảnh !");
-    });
   };
+
+  const handleDownloadAll = async () => {
+    const items = parseList();
+    const zip = new JSZip();
+
+    for (let i = 0; i < items.length; i++) {
+      const uri = stageRefs.current[i].toDataURL();
+      const blob = await (await fetch(uri)).blob();
+      zip.file(`${items[i].phone}.png`, blob);
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, "sims.zip");
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) {
+      const url = URL.createObjectURL(e.target.files[0]);
+      setBgSrc(url);
+    }
+  };
+
+  const items = parseList();
 
   return (
-    <div className="App">
-      <div className="header">
-        <h1>CREATE PICTURE</h1>
+    <div style={{ display: "flex", gap: "20px" }}>
+      {/* LEFT: Input */}
+      <div style={{ width: "40%" }}>
+        <h2>Danh sách SIM</h2>
+        <textarea
+          rows="10"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          // placeholder="0909xxxxxx = 1.000.000"
+          style={{ width: "100%" }}
+        />
+        <br />
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+        <br />
+        <button onClick={handleDownloadAll} style={{ marginTop: "10px" }}>
+          Tải tất cả ảnh
+        </button>
       </div>
-      <label htmlFor="inputText" style={{ fontSize: '30px' }}>Hãy nhập list tại đây:</label><br />
-      <textarea
-        id="inputText"
-        cols="30"
-        rows="5"
-        placeholder="Dán list tại đây..."
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-      ></textarea>
-      <br />
-      <div className="upload">
-        <MDBFile size='sm' id='formFileSm' onChange={handleImageChange} />
-      </div>
-      <div className="gr-radio">
-        <MDBRadio name='inlineRadio' id='inlineRadio1' value='<=' checked={filterType === '='} label="Phân cách bởi dấu '=' " inline onChange={() => setFilterType('=')} />
-        <MDBRadio name='inlineRadio' id='inlineRadio2' value='>=' label="Phân cách bởi dấu '-' " inline onChange={() => setFilterType('-')} />
-      </div>
-      <MDBBtn disabled={buttonDisabled} onClick={parseInput}>Tách số và Giá Bán</MDBBtn><br /><br />
-      <MDBBtn onClick={handleAllImagesButtonClick}>
-        <MDBIcon fas icon="download" />
-        Tải tất cả ảnh
-      </MDBBtn>
-      <hr />
-      <MDBContainer>
-        <MDBRow center>
-          <MDBCol size="4">
-            <div className="result">
-              <strong>Kết quả ( {output.length} số ) :</strong>
-              <MDBListGroup numbered style={{ maxWidth: "26rem" }} light>
-                {output
-                    .filter((o) =>
-                        o.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        o.price.toString().includes(searchTerm) // cho phép tìm theo số giá
-                    )
-                    .map((o, index) => (
-                        <MDBListGroupItem
-                            key={index}
-                            className="d-flex justify-content-between align-items-center"
-                        >
-                          <div className="ms-2 me-auto">
-                            <div className="fw-bold">{o.product}</div>
-                          </div>
-                          <MDBBadge pill light>
-                            {o.price} Triệu <br />
-                          </MDBBadge>
-                        </MDBListGroupItem>
-                    ))}
-              </MDBListGroup>
-            </div>
-          </MDBCol>
-          <MDBCol size="4">
-            <MDBInput
-                label="Tìm số trong kết quả"
-                id="formControlLg"
-                type="text"
-                size="lg"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
 
-          </MDBCol>
-        </MDBRow>
-      </MDBContainer>
-      <br /><br />
-      <hr />
-      <h1>Tạo ảnh</h1>
-      {output.map((o, index) => (
-        <div key={index}>
-          <div className="gr-img">
-            <label className="bg-image label-img" id={`imageContainer-${index}`}>
-              <img src={selectedImage} alt="Sample" />
-              <div className="mask">
-                <div className="d-flex justify-content-center align-items-center h-100">
-                  <p className="text-red mb-0 homeg-name" >
-                    {o.product} <br />
-                    <span className="homeg-price" style={{
-                      color: "black", fontSize: '40px'
-                    }}>
-                      Giá bán: {o.price} Triệu <br /> <span style={{ color: 'rgb(185, 39, 39)', fontSize: '20px' }}>(Còn bớt lộc)<br />Hỗ Trợ Trả Góp</span>
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </label>
-          </div>
-          <br /><br /><br />
-        </div>
-      ))}
-      {/*<SecurityModal/>*/}
+      {/* RIGHT: Preview */}
+      <div style={{ width: "60%", overflowY: "scroll", maxHeight: "500px" }}>
+        {items.map((item, idx) => (
+          <Stage
+            key={idx}
+            width={600}
+            height={200}
+            ref={(el) => (stageRefs.current[idx] = el)}
+            style={{
+              border: "1px solid #ccc",
+              marginBottom: "10px",
+              background: "#f9f9f9",
+            }}
+          >
+            <Layer>
+              {/* Ảnh nền */}
+              {bgSrc && <BackgroundImage src={bgSrc} width={600} height={200} />}
+
+              {/* Text số + giá */}
+              <Text
+                text={item.phone}
+                x={50}
+                y={50}
+                fontSize={32}
+                fontStyle="bold"
+                fill="red"
+              />
+              <Text
+                text={item.price}
+                x={50}
+                y={120}
+                fontSize={28}
+                fontStyle="italic"
+                fill="blue"
+              />
+            </Layer>
+          </Stage>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default CreateImage;
+}

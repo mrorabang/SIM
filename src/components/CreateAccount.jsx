@@ -4,12 +4,19 @@ import {showAlert} from "../service/AlertServices";
 import {checkUsernameExists, saveAccount} from "../api/Accounts";
 import bcrypt from "bcryptjs";
 import {useNavigate} from "react-router-dom";
+import AvatarUpload from "./AvatarUpload";
 
 function CreateAccount() {
     const {register, handleSubmit, watch, formState: {errors}} = useForm();
     const [status] = useState(true); // Mặc định trạng thái là true
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [avatar, setAvatar] = useState("");
     const nav = useNavigate();
+
+    // Xử lý avatar change
+    const handleAvatarChange = (avatarUrl, publicId) => {
+        setAvatar(publicId);
+    };
 
     // Xử lý gửi form
     const onSubmit = async (data) => {
@@ -26,7 +33,7 @@ function CreateAccount() {
         }
 
         const hashedPassword = await bcrypt.hash(data.password, 6);
-        const accountData = {...data, password: hashedPassword, status};
+        const accountData = {...data, password: hashedPassword, status, avatar};
 
         try {
             await saveAccount(accountData);
@@ -47,6 +54,15 @@ function CreateAccount() {
                     </button>
                 </div>
                 <form onSubmit={handleSubmit(onSubmit)} className="p-4 mt-1 shadow rounded">
+                    {/* Avatar Upload Section */}
+                    <div className="text-center mb-4">
+                        <AvatarUpload
+                            currentAvatar={avatar}
+                            onAvatarChange={handleAvatarChange}
+                            size={100}
+                        />
+                        <p className="text-muted small mt-2">Tải lên ảnh đại diện (tùy chọn)</p>
+                    </div>
 
                     <div className="mb-3">
                         <label className="fw-bold">Full Name</label>

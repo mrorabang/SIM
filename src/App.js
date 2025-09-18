@@ -5,11 +5,13 @@ import Filter from "./components/Filter";
 import LoginPage from "./components/LoginPage";
 import ProtectedRoute from "./service/ProtectedRoute";
 import Menu from "./layout/Menu";
+import Footer from "./layout/Footer";
 import NotFound from "./components/NotFound";
 import Chat from "./components/Chat";
 import AccountManagement from "./components/AccountManagement";
 import CreateAccount from "./components/CreateAccount";
 import Profile from "./components/Profile";
+import SimImageGenerator from "./components/SimImageGenerator";
 
 function App() {
     return (
@@ -17,30 +19,33 @@ function App() {
 
             <Routes>
                 <Route path="/" element={<Navigate to="/login" />} />
-                <Route path="/login" element={<LoginPage />} />
+                <Route path="/login" element={
+                    <>
+                        <LoginPage />
+                        <Footer />
+                    </>
+                } />
 
-                <Route path="/create" element={
-                    <ProtectedRoute>
-                        <Menu/>
-                        <CreateImage />
-                    </ProtectedRoute>
-                }/>
+              
                 <Route path="/contact" element={
                     <ProtectedRoute>
                         <Menu/>
                         <Contact />
+                        <Footer />
                     </ProtectedRoute>
                 }/>
                 <Route path="/filter" element={
                     <ProtectedRoute>
                         <Menu/>
                         <Filter />
+                        <Footer />
                     </ProtectedRoute>
                 }/>
                 <Route path="/chat" element={
                     <ProtectedRoute>
                         <Menu/>
                         <Chat />
+                        <Footer />
                     </ProtectedRoute>
                 } />
 
@@ -48,6 +53,7 @@ function App() {
                     <ProtectedRoute adminOnly={true}>
                         <Menu/>
                         <AccountManagement />
+                        <Footer />
                     </ProtectedRoute>
                 } />
 
@@ -55,6 +61,7 @@ function App() {
                     <ProtectedRoute adminOnly={true}>
                         <Menu/>
                         <CreateAccount />
+                        <Footer />
                     </ProtectedRoute>
                 } />
 
@@ -62,10 +69,24 @@ function App() {
                     <ProtectedRoute>
                         <Menu/>
                         <Profile />
+                        <Footer />
                     </ProtectedRoute>
                 } />
 
-                <Route path="*" element={<NotFound />} />
+                <Route path="/sim-generator" element={
+                    <ProtectedRoute>
+                        <Menu/>
+                        <SimImageGenerator />
+                        <Footer />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="*" element={
+                    <>
+                        <NotFound />
+                        <Footer />
+                    </>
+                } />
 
             </Routes>
         </>
