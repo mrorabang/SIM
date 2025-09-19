@@ -21,13 +21,73 @@ import React, { useState, useEffect } from "react";
 import { showConfirm, showAlert } from "../service/AlertServices";
 import { getAvatarUrl } from "../config/cloudinary";
 
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        console.error('Menu Error Boundary caught an error:', error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="alert alert-danger">
+                    <h4>Đã xảy ra lỗi trong Menu</h4>
+                    <p>Vui lòng refresh trang để thử lại.</p>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
+
+// Safe MDBDropdownMenu wrapper
+const SafeMDBDropdownMenu = ({ children, ...props }) => {
+    // Filter out any null or undefined children
+    const validChildren = React.Children.toArray(children).filter(child => 
+        child !== null && child !== undefined && child !== false
+    );
+    
+    return (
+        <MDBDropdownMenu {...props}>
+            {validChildren}
+        </MDBDropdownMenu>
+    );
+};
+
 function Menu() {
     const [openBasic, setOpenBasic] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeItem, setActiveItem] = useState("");
-    const user = JSON.parse(localStorage.getItem("user"));
+    
+    // Lấy user từ localStorage với error handling và memoization
+    const user = React.useMemo(() => {
+        try {
+            const userData = localStorage.getItem("user");
+            if (!userData) {
+                return { fullname: "Guest", role: "USER", avatar: null };
+            }
+            return JSON.parse(userData);
+        } catch (error) {
+            console.error("Lỗi khi parse user data:", error);
+            return { fullname: "Guest", role: "USER", avatar: null };
+        }
+    }, []); // Chỉ chạy một lần khi component mount
+    
     const nav = useNavigate();
     const location = useLocation();
+
+    // Debug log để kiểm tra user data (chỉ log khi cần thiết)
+    // console.log("User data:", user);
 
     // Detect scroll for navbar styling
     useEffect(() => {
@@ -51,6 +111,14 @@ function Menu() {
         else setActiveItem('');
     }, [location]);
 
+    // Kiểm tra user data khi component mount
+    useEffect(() => {
+        if (!user || !user.fullname || user.fullname === "Guest") {
+            // Nếu không có user data hợp lệ, redirect về login
+            nav("/login");
+        }
+    }, [user, nav]);
+
     // Xử lý logout
     const handleLogout = async () => {
         const confirm = await showConfirm("Bạn có chắc chắn muốn đăng xuất?", "warning");
@@ -60,6 +128,11 @@ function Menu() {
             showAlert("Đã đăng xuất!", "success");
         }
     };
+
+    // Kiểm tra user có hợp lệ không
+    if (!user || !user.fullname) {
+        return null; // Không render menu nếu không có user
+    }
 
     const menuItems = [
         {
@@ -111,7 +184,7 @@ function Menu() {
     );
 
     return (
-        <>
+        <ErrorBoundary>
             <style>
                 {`
                     .navbar-custom {
@@ -220,19 +293,21 @@ function Menu() {
 
                     <MDBCollapse navbar open={openBasic}>
                         <MDBNavbarNav className="me-auto mb-2 mb-lg-0">
-                            {menuItems.map((item, index) => (
-                                <MDBNavbarItem key={index} className="mx-1">
-                                    <NavLink item={item}>
-                                        <MDBIcon
-                                            fas
-                                            icon={item.icon}
-                                            className="me-2"
-                                            style={{ fontSize: '1.1rem' }}
-                                        />
-                                        <span className="d-none d-lg-inline">{item.label}</span>
-                                    </NavLink>
-                                </MDBNavbarItem>
-                            ))}
+                            {menuItems && menuItems.length > 0 ? menuItems
+                                .filter(item => item && item.path && item.label)
+                                .map((item, index) => (
+                                    <MDBNavbarItem key={index} className="mx-1">
+                                        <NavLink item={item}>
+                                            <MDBIcon
+                                                fas
+                                                icon={item.icon || "circle"}
+                                                className="me-2"
+                                                style={{ fontSize: '1.1rem' }}
+                                            />
+                                            <span className="d-none d-lg-inline">{item.label}</span>
+                                        </NavLink>
+                                    </MDBNavbarItem>
+                                )) : null}
                         </MDBNavbarNav>
 
                         {/* User Profile Dropdown */}
@@ -292,7 +367,7 @@ function Menu() {
                                                     textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                                                 }}
                                             >
-                                                {user.fullname}
+                                                {user?.fullname || "Guest"}
                                             </span>
                                             <MDBIcon
                                                 fas
@@ -309,7 +384,7 @@ function Menu() {
                                 </div>
                             </MDBDropdownToggle>
 
-                            <MDBDropdownMenu
+                            <SafeMDBDropdownMenu
                                 className="mt-2"
                                 style={{
                                     borderRadius: '15px',
@@ -318,7 +393,7 @@ function Menu() {
                                     minWidth: '200px'
                                 }}
                             >
-
+                                {/* Profile Item */}
                                 <MDBDropdownItem
                                     link
                                     onClick={() => nav("/profile")}
@@ -330,7 +405,7 @@ function Menu() {
                                     </div>
                                 </MDBDropdownItem>
 
-                                {user.role === "ADMIN" && (
+                                {user?.role === "ADMIN" ? (
                                     <MDBDropdownItem
                                         link
                                         onClick={() => nav("/account")}
@@ -341,10 +416,12 @@ function Menu() {
                                             <div className="fw-bold">Account Management</div>
                                         </div>
                                     </MDBDropdownItem>
-                                )}
+                                ) : null}
 
+                                {/* Divider */}
                                 <MDBDropdownItem divider />
 
+                                {/* Logout Item */}
                                 <MDBDropdownItem
                                     link
                                     onClick={handleLogout}
@@ -355,7 +432,7 @@ function Menu() {
                                         <div className="fw-bold">Logout</div>
                                     </div>
                                 </MDBDropdownItem>
-                            </MDBDropdownMenu>
+                            </SafeMDBDropdownMenu>
                         </MDBDropdown>
                     </MDBCollapse>
                 </MDBContainer>
@@ -363,7 +440,7 @@ function Menu() {
 
             {/* Spacer for fixed navbar */}
             <div style={{ height: '80px' }}></div>
-        </>
+        </ErrorBoundary>
     );
 }
 

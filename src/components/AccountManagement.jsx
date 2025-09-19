@@ -10,14 +10,7 @@ import {
     MDBBtn,
     MDBIcon,
     MDBBadge,
-    MDBInput,
-    MDBModal,
-    MDBModalDialog,
-    MDBModalContent,
-    MDBModalHeader,
-    MDBModalTitle,
-    MDBModalBody,
-    MDBModalFooter
+    MDBInput
 } from "mdb-react-ui-kit";
 import { changeStatusAPI, deleteAccount, getAccounts } from "../api/Accounts";
 import { showAlert, showConfirm } from "../service/AlertServices";
@@ -29,8 +22,6 @@ function AccountManagement() {
     const [currentPage, setCurrentPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredAccounts, setFilteredAccounts] = useState([]);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [accountToDelete, setAccountToDelete] = useState(null);
     const itemsPerPage = 6;
     const nav = useNavigate();
 
@@ -72,21 +63,22 @@ function AccountManagement() {
         }
     };
 
-    const handleDeleteClick = (account) => {
-        setAccountToDelete(account);
-        setShowDeleteModal(true);
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (!accountToDelete) return;
-
-        const success = await deleteAccount(accountToDelete.id);
-        if (success) {
-            setAccounts(prevAccounts => prevAccounts.filter(account => account.id !== accountToDelete.id));
-            showAlert("Xóa tài khoản thành công!", "success");
+    const handleDeleteClick = async (account) => {
+        const confirmed = await showConfirm(
+            `Bạn có chắc chắn muốn xóa tài khoản "${account.username}"?`,
+            "warning"
+        );
+        
+        if (confirmed) {
+            const success = await deleteAccount(account.id);
+            if (success) {
+                setAccounts(prevAccounts => prevAccounts.filter(acc => acc.id !== account.id));
+                setFilteredAccounts(prevFiltered => prevFiltered.filter(acc => acc.id !== account.id));
+                showAlert("Xóa tài khoản thành công!", "success");
+            } else {
+                showAlert("Xóa tài khoản thất bại. Vui lòng thử lại!", "danger");
+            }
         }
-        setShowDeleteModal(false);
-        setAccountToDelete(null);
     };
 
     const offset = currentPage * itemsPerPage;
@@ -286,28 +278,6 @@ function AccountManagement() {
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
-            <MDBModal show={showDeleteModal} setShow={setShowDeleteModal} tabIndex="-1">
-                <MDBModalDialog>
-                    <MDBModalContent>
-                        <MDBModalHeader>
-                            <MDBModalTitle>Xác nhận xóa tài khoản</MDBModalTitle>
-                        </MDBModalHeader>
-                        <MDBModalBody>
-                            <p>Bạn có chắc chắn muốn xóa tài khoản <strong>{accountToDelete?.username}</strong>?</p>
-                            <p className="text-danger small">Hành động này không thể hoàn tác!</p>
-                        </MDBModalBody>
-                        <MDBModalFooter>
-                            <MDBBtn color="secondary" onClick={() => setShowDeleteModal(false)}>
-                                Hủy
-                            </MDBBtn>
-                            <MDBBtn color="danger" onClick={handleDeleteConfirm}>
-                                Xóa tài khoản
-                            </MDBBtn>
-                        </MDBModalFooter>
-                    </MDBModalContent>
-                </MDBModalDialog>
-            </MDBModal>
         </MDBContainer>
     );
 }

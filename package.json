@@ -6,6 +6,7 @@
   "dependencies": {
     "@cloudinary/react": "^1.14.3",
     "@cloudinary/url-gen": "^1.22.0",
+    "@emailjs/browser": "^4.4.1",
     "@expo-google-fonts/anton": "^0.2.3",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@minchat/react-chat-ui": "^0.16.2",
@@ -16,12 +17,15 @@
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
     "bootstrap": "^5.3.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "file-saver": "^2.0.5",
     "gh-pages": "^6.1.0",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
     "konva": "^9.3.22",
     "mdb-react-ui-kit": "^7.2.0",
+    "nodemailer": "^7.0.6",
     "openai": "^5.8.2",
     "react": "^18.3.1",
     "react-bootstrap": "^2.9.1",
@@ -44,7 +48,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "node server.js",
+    "dev": "concurrently \"npm run server\" \"npm start\""
   },
   "eslintConfig": {
     "extends": [
@@ -66,6 +72,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
     "postcss": "^8.5.4",
     "tailwindcss": "^4.1.8"
   }

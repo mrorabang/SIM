@@ -18,7 +18,7 @@ function App() {
         <>
 
             <Routes>
-                <Route path="/" element={<Navigate to="/login" />} />
+                <Route path="/" element={<Navigate to="/sim-generator" />} />
                 <Route path="/login" element={
                     <>
                         <LoginPage />
@@ -77,6 +77,24 @@ function App() {
                     <ProtectedRoute>
                         <Menu/>
                         <SimImageGenerator />
+                        <Footer />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/unauthorized" element={
+                    <ProtectedRoute>
+                        <Menu/>
+                        <div className="container mt-5">
+                            <div className="row justify-content-center">
+                                <div className="col-md-6">
+                                    <div className="alert alert-warning text-center">
+                                        <h4>Không có quyền truy cập</h4>
+                                        <p>Bạn không có quyền truy cập vào trang này.</p>
+                                        <a href="/sim-generator" className="btn btn-primary">Về trang chính</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <Footer />
                     </ProtectedRoute>
                 } />

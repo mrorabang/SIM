@@ -128,7 +128,7 @@ function LoginPage() {
                                 >
                                     <MDBIcon 
                                         icon={showPassword ? 'eye-slash' : 'eye'} 
-                                        size="sm"
+                                        size="xl"
                                         style={{ color: '#6c757d' }}
                                     />
                                 </button>

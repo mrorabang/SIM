@@ -665,10 +665,10 @@ const SimImageGenerator = () => {
     };
 
     return (
-        <div className="container mt-4">
+        <div className="container mt-3">
             <div className="row">
-                <div className="col-md-12 ">
-                    <div className="alert alert-info mt-5">
+                <div className="col-md-12">
+                    <div className="alert alert-info mt-2">
                         <h6>Hướng dẫn:</h6>
                         <p className="mb-0">Upload ảnh → Nhập SIM → Chỉnh text → Tải xuống</p>
                     </div>
@@ -930,14 +930,115 @@ const SimImageGenerator = () => {
                                             className="form-control form-control-sm"
                                             value={getSelectedTextConfig().fontFamily}
                                             onChange={(e) => updateSelectedTextConfig('fontFamily', e.target.value)}
+                                            style={{ fontFamily: getSelectedTextConfig().fontFamily }}
                                         >
-                                            <option value="Arial">Arial</option>
-                                            <option value="Times New Roman">Times New Roman</option>
-                                            <option value="Courier New">Courier New</option>
-                                            <option value="Verdana">Verdana</option>
-                                            <option value="Georgia">Georgia</option>
-                                            <option value="Impact">Impact</option>
+                                            {/* Sans-serif Fonts */}
+                                            <optgroup label="Sans-serif Fonts">
+                                                <option value="Arial">Arial</option>
+                                                <option value="Helvetica">Helvetica</option>
+                                                <option value="Verdana">Verdana</option>
+                                                <option value="Tahoma">Tahoma</option>
+                                                <option value="Trebuchet MS">Trebuchet MS</option>
+                                                <option value="Calibri">Calibri</option>
+                                                <option value="Segoe UI">Segoe UI</option>
+                                                <option value="Open Sans">Open Sans</option>
+                                                <option value="Roboto">Roboto</option>
+                                                <option value="Lato">Lato</option>
+                                                <option value="Source Sans Pro">Source Sans Pro</option>
+                                                <option value="Poppins">Poppins</option>
+                                                <option value="Montserrat">Montserrat</option>
+                                                <option value="Nunito">Nunito</option>
+                                                <option value="Ubuntu">Ubuntu</option>
+                                            </optgroup>
+                                            
+                                            {/* Serif Fonts */}
+                                            <optgroup label="Serif Fonts">
+                                                <option value="Times New Roman">Times New Roman</option>
+                                                <option value="Georgia">Georgia</option>
+                                                <option value="Times">Times</option>
+                                                <option value="Palatino">Palatino</option>
+                                                <option value="Garamond">Garamond</option>
+                                                <option value="Book Antiqua">Book Antiqua</option>
+                                                <option value="Baskerville">Baskerville</option>
+                                                <option value="Playfair Display">Playfair Display</option>
+                                                <option value="Merriweather">Merriweather</option>
+                                                <option value="Crimson Text">Crimson Text</option>
+                                                <option value="Libre Baskerville">Libre Baskerville</option>
+                                            </optgroup>
+                                            
+                                            {/* Monospace Fonts */}
+                                            <optgroup label="Monospace Fonts">
+                                                <option value="Courier New">Courier New</option>
+                                                <option value="Courier">Courier</option>
+                                                <option value="Monaco">Monaco</option>
+                                                <option value="Consolas">Consolas</option>
+                                                <option value="Lucida Console">Lucida Console</option>
+                                                <option value="Source Code Pro">Source Code Pro</option>
+                                                <option value="Fira Code">Fira Code</option>
+                                                <option value="JetBrains Mono">JetBrains Mono</option>
+                                            </optgroup>
+                                            
+                                            {/* Display Fonts */}
+                                            <optgroup label="Display Fonts">
+                                                <option value="Impact">Impact</option>
+                                                <option value="Arial Black">Arial Black</option>
+                                                <option value="Comic Sans MS">Comic Sans MS</option>
+                                                <option value="Papyrus">Papyrus</option>
+                                                <option value="Chalkduster">Chalkduster</option>
+                                                <option value="Marker Felt">Marker Felt</option>
+                                                <option value="Brush Script MT">Brush Script MT</option>
+                                                <option value="Lobster">Lobster</option>
+                                                <option value="Pacifico">Pacifico</option>
+                                                <option value="Righteous">Righteous</option>
+                                                <option value="Bangers">Bangers</option>
+                                                <option value="Fredoka One">Fredoka One</option>
+                                                <option value="Bungee">Bungee</option>
+                                                <option value="Orbitron">Orbitron</option>
+                                                <option value="Russo One">Russo One</option>
+                                            </optgroup>
+                                            
+                                            {/* Handwriting Fonts */}
+                                            <optgroup label="Handwriting Fonts">
+                                                <option value="Brush Script MT">Brush Script MT</option>
+                                                <option value="Lucida Handwriting">Lucida Handwriting</option>
+                                                <option value="Bradley Hand">Bradley Hand</option>
+                                                <option value="Kalam">Kalam</option>
+                                                <option value="Caveat">Caveat</option>
+                                                <option value="Dancing Script">Dancing Script</option>
+                                                <option value="Indie Flower">Indie Flower</option>
+                                                <option value="Permanent Marker">Permanent Marker</option>
+                                                <option value="Satisfy">Satisfy</option>
+                                            </optgroup>
+                                            
+                                            {/* Vietnamese Fonts */}
+                                            <optgroup label="Vietnamese Fonts">
+                                                <option value="Be Vietnam Pro">Be Vietnam Pro</option>
+                                                <option value="Inter">Inter</option>
+                                                <option value="Lexend">Lexend</option>
+                                                <option value="Work Sans">Work Sans</option>
+                                                <option value="Quicksand">Quicksand</option>
+                                                <option value="Comfortaa">Comfortaa</option>
+                                                <option value="Varela Round">Varela Round</option>
+                                                <option value="M PLUS Rounded 1c">M PLUS Rounded 1c</option>
+                                            </optgroup>
                                         </select>
+                                        
+                                        {/* Font Preview */}
+                                        <div className="mt-2">
+                                            <small className="text-muted">Preview:</small>
+                                            <div 
+                                                className="border rounded p-2 bg-light"
+                                                style={{ 
+                                                    fontFamily: getSelectedTextConfig().fontFamily,
+                                                    fontSize: '14px',
+                                                    minHeight: '30px',
+                                                    display: 'flex',
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                {getSelectedTextConfig().fontFamily} - Sample Text
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="col-6">
                                         <label className="form-label">Font Size:</label>

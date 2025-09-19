@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
     MDBContainer, 
     MDBRow, 
@@ -14,6 +14,7 @@ import {
     MDBValidationItem
 } from "mdb-react-ui-kit";
 import {showAlert} from "../service/AlertServices";
+import {sendContactEmail} from "../service/SendMail";
 
 function Contact() {
     const [formData, setFormData] = useState({
@@ -24,6 +25,7 @@ function Contact() {
         message: ""
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [recipientEmail, setRecipientEmail] = useState("");
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -32,6 +34,14 @@ function Contact() {
             [name]: value
         }));
     };
+
+    // Load email từ localStorage khi component mount
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('recipientEmail');
+        if (savedEmail) {
+            setRecipientEmail(savedEmail);
+        }
+    }, []);
 
     const validateForm = () => {
         if (!formData.name.trim()) {
@@ -54,20 +64,53 @@ function Contact() {
         
         if (!validateForm()) return;
         
+        // Kiểm tra email nhận
+        if (!recipientEmail) {
+            const email = prompt('Vui lòng nhập email của bạn để nhận tin nhắn liên hệ:');
+            if (!email) {
+                showAlert('Vui lòng nhập email để tiếp tục!', 'warning');
+                return;
+            }
+            setRecipientEmail(email);
+            localStorage.setItem('recipientEmail', email);
+        }
+        
         setIsSubmitting(true);
         
-        // Simulate API call
-        setTimeout(() => {
-            showAlert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.', 'success');
-            setFormData({
-                name: "",
-                phoneNumber: "",
-                email: "",
-                subject: "",
-                message: ""
-            });
+        try {
+            // Chuẩn bị dữ liệu email
+            const emailParams = {
+                from_name: formData.name,
+                from_email: formData.email || 'noreply@example.com',
+                phone_number: formData.phoneNumber,
+                subject: formData.subject || 'Liên hệ từ website',
+                message: formData.message,
+                to_email: recipientEmail
+            };
+
+            // Gửi email
+            const result = await sendContactEmail(emailParams);
+            
+            if (result.success) {
+                showAlert('Cảm ơn bạn đã liên hệ! Email đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất có thể.', 'success');
+                
+                // Reset form
+                setFormData({
+                    name: "",
+                    phoneNumber: "",
+                    email: "",
+                    subject: "",
+                    message: ""
+                });
+            } else {
+                showAlert(`Lỗi khi gửi email: ${result.message}`, 'error');
+            }
+        } catch (error) {
+            console.error('Error sending email:', error);
+            showAlert('Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau!', 'error');
+        } finally {
             setIsSubmitting(false);
-        }, 2000);
+        }
     };
 
     const contactInfo = [
