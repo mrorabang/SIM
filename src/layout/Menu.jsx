@@ -73,13 +73,14 @@ function Menu() {
     const user = React.useMemo(() => {
         try {
             const userData = localStorage.getItem("user");
-            if (!userData) {
-                return { fullname: "Guest", role: "USER", avatar: null };
+            const isAuthenticated = localStorage.getItem("authenticated") === "true";
+            if (!userData || !isAuthenticated) {
+                return null; // Không có user data hoặc chưa đăng nhập
             }
             return JSON.parse(userData);
         } catch (error) {
             console.error("Lỗi khi parse user data:", error);
-            return { fullname: "Guest", role: "USER", avatar: null };
+            return null;
         }
     }, []); // Chỉ chạy một lần khi component mount
     
@@ -103,7 +104,8 @@ function Menu() {
     // Set active menu item based on current route
     useEffect(() => {
         const path = location.pathname;
-        if (path.includes('/sim-generator')) setActiveItem('generator');
+        if (path === '/' || path.includes('/home')) setActiveItem('home');
+        else if (path.includes('/sim-generator')) setActiveItem('generator');
         else if (path.includes('/chat')) setActiveItem('chat');
         else if (path.includes('/contact')) setActiveItem('contact');
         else if (path.includes('/profile')) setActiveItem('profile');
@@ -111,69 +113,73 @@ function Menu() {
         else setActiveItem('');
     }, [location]);
 
-    // Kiểm tra user data khi component mount
-    useEffect(() => {
-        if (!user || !user.fullname || user.fullname === "Guest") {
-            // Nếu không có user data hợp lệ, redirect về login
-            nav("/login");
-        }
-    }, [user, nav]);
+    // Không cần redirect về login nữa, cho phép truy cập trang home
 
     // Xử lý logout
     const handleLogout = async () => {
         const confirm = await showConfirm("Bạn có chắc chắn muốn đăng xuất?", "warning");
         if (confirm) {
             localStorage.clear();
-            nav("/login");
+            nav("/");
             showAlert("Đã đăng xuất!", "success");
         }
     };
 
-    // Kiểm tra user có hợp lệ không
-    if (!user || !user.fullname) {
-        return null; // Không render menu nếu không có user
-    }
+    // Kiểm tra user có đăng nhập không
+    const isAuthenticated = user && user.fullname && user.fullname !== "Guest";
 
     const menuItems = [
+        {
+            path: "/",
+            label: "Home",
+            icon: "home",
+            color: "light",
+            requiresAuth: false
+        },
         {
             path: "/sim-generator",
             label: "Image Generator",
             icon: "image",
-            color: "primary"
+            color: "primary",
+            requiresAuth: true
         },
         {
             path: "/chat",
             label: "Chat with AI",
             icon: "comments",
-            color: "success"
+            color: "success",
+            requiresAuth: true
         },
         {
             path: "/contact",
             label: "Contact",
             icon: "envelope",
-            color: "info"
+            color: "info",
+            requiresAuth: false
         }
-    ];
+    ].filter(item => !item.requiresAuth || isAuthenticated);
 
-    const NavLink = ({ item, children }) => (
+    const NavLink = ({ item, children }) => {
+        const isActive = item.path === '/' ? activeItem === 'home' : activeItem === item.path.split('/')[1];
+        return (
         <Link
             to={item.path}
-            className={`nav-link d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none ${activeItem === item.path.split('/')[1] ? 'active' : ''
+            className={`nav-link d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none ${isActive ? 'active' : ''
                 }`}
             style={{
                 transition: 'all 0.3s ease',
-                fontWeight: activeItem === item.path.split('/')[1] ? '600' : '500',
-                color: activeItem === item.path.split('/')[1] ? '#fff' : '#ffffff',
-                backgroundColor: activeItem === item.path.split('/')[1] ? `var(--bs-${item.color})` : 'rgba(255,255,255,0.1)'
+                fontWeight: isActive ? '600' : '500',
+                color: isActive ? '#fff' : '#ffffff',
+                backgroundColor: isActive ? `var(--bs-${item.color})` : 'rgba(255,255,255,0.1)'
             }}
             onMouseEnter={(e) => {
-                if (activeItem !== item.path.split('/')[1]) {
+                if (!isActive) {
                     e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)';
                     e.currentTarget.style.color = '#ffffff';
                 }
             }}
             onMouseLeave={(e) => {
-                if (activeItem !== item.path.split('/')[1]) {
+                if (!isActive) {
                     e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
                     e.currentTarget.style.color = '#ffffff';
                 }
@@ -181,7 +187,8 @@ function Menu() {
         >
             {children}
         </Link>
-    );
+        );
+    };
 
     return (
         <ErrorBoundary>
@@ -310,79 +317,79 @@ function Menu() {
                                 )) : null}
                         </MDBNavbarNav>
 
-                        {/* User Profile Dropdown */}
-                        <MDBDropdown className="ms-auto">
-                            <MDBDropdownToggle
-                                tag="div"
-                                className="d-flex align-items-center text-decoration-none"
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <div
-                                    className="profile-dropdown d-flex align-items-center px-3 py-2"
-                                    style={{
-                                        transition: 'all 0.3s ease',
-                                        minWidth: '140px'
-                                    }}
+                        {/* User Profile Dropdown hoặc Login Button */}
+                        {isAuthenticated ? (
+                            <MDBDropdown className="ms-auto">
+                                <MDBDropdownToggle
+                                    tag="div"
+                                    className="d-flex align-items-center text-decoration-none"
+                                    style={{ cursor: 'pointer' }}
                                 >
-                                    {user.avatar ? (
-                                        <img
-                                            src={getAvatarUrl(user.avatar, 36)}
-                                            alt="Avatar"
-                                            className="profile-avatar me-2"
-                                            style={{
-                                                width: '36px',
-                                                height: '36px',
-                                                borderRadius: '50%',
-                                                objectFit: 'cover',
-                                                border: '2px solid rgba(255,255,255,0.3)'
-                                            }}
-                                        />
-                                    ) : (
-                                        <div
-                                            className="profile-avatar d-flex align-items-center justify-content-center me-2"
-                                            style={{
-                                                width: '36px',
-                                                height: '36px',
-                                                backgroundColor: 'rgba(255,255,255,0.2)',
-                                                borderRadius: '50%',
-                                                border: '2px solid rgba(255,255,255,0.3)'
-                                            }}
-                                        >
-                                            <MDBIcon
-                                                fas
-                                                icon="user"
-                                                className="text-white"
-                                                style={{ fontSize: '1.2rem' }}
-                                            />
-                                        </div>
-                                    )}
-                                    <div className="d-flex flex-column">
-                                        <div className="d-flex align-items-center">
-                                            <span
-                                                className="fw-bold me-2"
+                                    <div
+                                        className="profile-dropdown d-flex align-items-center px-3 py-2"
+                                        style={{
+                                            transition: 'all 0.3s ease',
+                                            minWidth: '140px'
+                                        }}
+                                    >
+                                        {user.avatar ? (
+                                            <img
+                                                src={getAvatarUrl(user.avatar, 36)}
+                                                alt="Avatar"
+                                                className="profile-avatar me-2"
                                                 style={{
-                                                    fontSize: '0.9rem',
-                                                    color: '#ffffff',
-                                                    lineHeight: '1.2',
-                                                    textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    borderRadius: '50%',
+                                                    objectFit: 'cover',
+                                                    border: '2px solid rgba(255,255,255,0.3)'
+                                                }}
+                                            />
+                                        ) : (
+                                            <div
+                                                className="profile-avatar d-flex align-items-center justify-content-center me-2"
+                                                style={{
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                                    borderRadius: '50%',
+                                                    border: '2px solid rgba(255,255,255,0.3)'
                                                 }}
                                             >
-                                                {user?.fullname || "Guest"}
-                                            </span>
-                                            <MDBIcon
-                                                fas
-                                                icon="chevron-down"
-                                                size="xs"
-                                                style={{
-                                                    color: 'rgba(255,255,255,0.9)',
-                                                    fontSize: '0.7rem'
-                                                }}
-                                            />
+                                                <MDBIcon
+                                                    fas
+                                                    icon="user"
+                                                    className="text-white"
+                                                    style={{ fontSize: '1.2rem' }}
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="d-flex flex-column">
+                                            <div className="d-flex align-items-center">
+                                                <span
+                                                    className="fw-bold me-2"
+                                                    style={{
+                                                        fontSize: '0.9rem',
+                                                        color: '#ffffff',
+                                                        lineHeight: '1.2',
+                                                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                                                    }}
+                                                >
+                                                    {user?.fullname || "Guest"}
+                                                </span>
+                                                <MDBIcon
+                                                    fas
+                                                    icon="chevron-down"
+                                                    size="xs"
+                                                    style={{
+                                                        color: 'rgba(255,255,255,0.9)',
+                                                        fontSize: '0.7rem'
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
-
                                     </div>
-                                </div>
-                            </MDBDropdownToggle>
+                                </MDBDropdownToggle>
 
                             <SafeMDBDropdownMenu
                                 className="mt-2"
@@ -433,7 +440,24 @@ function Menu() {
                                     </div>
                                 </MDBDropdownItem>
                             </SafeMDBDropdownMenu>
-                        </MDBDropdown>
+                            </MDBDropdown>
+                        ) : (
+                            <div className="ms-auto">
+                                <MDBBtn
+                                    color="outline-light"
+                                    className="login-btn"
+                                    onClick={() => nav("/login")}
+                                    style={{
+                                        borderRadius: '25px',
+                                        padding: '8px 20px',
+                                        fontWeight: '600',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    Login
+                                </MDBBtn>
+                            </div>
+                        )}
                     </MDBCollapse>
                 </MDBContainer>
             </MDBNavbar>

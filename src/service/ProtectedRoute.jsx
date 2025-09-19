@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children, adminOnly }) => {
     // Kiểm tra quyền truy cập, nếu role là USER và cần ADMIN → Chuyển về trang chính
     if (adminOnly && user?.role !== "ADMIN") {
         showAlert("Bạn không có quyền truy cập vào trang này!", "warning");
-        return <Navigate to="/sim-generator" />;
+        return <Navigate to="/" />;
     }
 
     return <>{children}</>;

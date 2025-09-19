@@ -12,13 +12,20 @@ import AccountManagement from "./components/AccountManagement";
 import CreateAccount from "./components/CreateAccount";
 import Profile from "./components/Profile";
 import SimImageGenerator from "./components/SimImageGenerator";
+import HomePage from "./components/HomePage";
 
 function App() {
     return (
         <>
 
             <Routes>
-                <Route path="/" element={<Navigate to="/sim-generator" />} />
+                <Route path="/" element={
+                    <>
+                        <Menu/>
+                        <HomePage />
+                        <Footer />
+                    </>
+                } />
                 <Route path="/login" element={
                     <>
                         <LoginPage />
@@ -28,11 +35,11 @@ function App() {
 
               
                 <Route path="/contact" element={
-                    <ProtectedRoute>
+                    <>
                         <Menu/>
                         <Contact />
                         <Footer />
-                    </ProtectedRoute>
+                    </>
                 }/>
                 <Route path="/filter" element={
                     <ProtectedRoute>

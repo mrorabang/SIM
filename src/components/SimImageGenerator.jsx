@@ -427,7 +427,7 @@ const SimImageGenerator = () => {
                         ctx.shadowOffsetY = textConfig.price.shadowOffset.y;
                         ctx.globalAlpha = textConfig.price.opacity;
 
-                        const priceText = (price || '500000') + ' VNĐ';
+                        const priceText = (price || '500000') + ' Triệu';
                         if (textConfig.price.strokeWidth > 0) {
                             ctx.strokeText(priceText, textConfig.price.x, textConfig.price.y);
                         }
@@ -716,7 +716,7 @@ const SimImageGenerator = () => {
                                 <label className="form-label text-primary fw-bold">Danh sách SIM:</label>
                                 <textarea
                                     className="form-control"
-                                    rows="8"
+                                    rows="4"
                                     placeholder="Dán list sim tại đây..."
                                     value={simList}
                                     onChange={handleSimListChange}
@@ -1406,7 +1406,7 @@ const SimImageGenerator = () => {
                                             />
                                             <Text
                                                 name="price"
-                                                text={simData.length > 0 ? simData[0].price + " VNĐ" : "500,000 VNĐ"}
+                                                text={simData.length > 0 ? simData[0].price + " Triệu" : "500,000 VNĐ"}
                                                 x={textConfig.price.x}
                                                 y={textConfig.price.y}
                                                 fontSize={textConfig.price.fontSize}

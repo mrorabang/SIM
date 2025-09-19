@@ -81,9 +81,11 @@ export const deleteAccount = async (id) => {
         if (!response.ok) {
             throw new Error("Không thể xóa tài khoản!");
         }
+        showAlert("Xóa tài khoản thành công!", "success");
         return true;
     } catch (error) {
         console.error("Lỗi khi xóa tài khoản:", error);
+        showAlert("Lỗi khi xóa tài khoản. Vui lòng thử lại!", "danger");
         return false;
     }
 };

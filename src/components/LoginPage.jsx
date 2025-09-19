@@ -12,7 +12,7 @@ import {
 } from 'mdb-react-ui-kit';
 import { getAccounts } from "../api/Accounts";
 import {showAlert} from "../service/AlertServices";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 import bcrypt from 'bcryptjs';
 
 
@@ -53,7 +53,7 @@ function LoginPage() {
             localStorage.setItem("user",JSON.stringify(found));
             localStorage.setItem("authenticated", "true");
             console.log(localStorage.getItem("user"));
-            nav('/sim-generator');
+            nav('/');
         } else {
             showAlert("Sai tài khoản hoặc mật khẩu", "error");
         }
@@ -74,6 +74,25 @@ function LoginPage() {
 
     return (
         <MDBContainer fluid className='p-4'>
+            {/* Nút Về Home */}
+            <div className="mb-4">
+                <Link to="/">
+                    <MDBBtn
+                        color="outline-primary"
+                        className="d-flex align-items-center"
+                        style={{
+                            borderRadius: '25px',
+                            padding: '8px 20px',
+                            fontWeight: '600',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <MDBIcon fas icon="home" className="me-2" />
+                        Về Home
+                    </MDBBtn>
+                </Link>
+            </div>
+            
             <MDBRow>
                 <MDBCol md='6' className='text-center text-md-start d-flex flex-column justify-content-center'>
                     <h1 className="my-5 display-3 fw-bold ls-tight px-3">
@@ -139,6 +158,25 @@ function LoginPage() {
                             </div>
 
                             <MDBBtn className='w-100 mb-4' size='md' onClick={handleLogin}>Login</MDBBtn>
+
+                            {/* Nút Về Home thứ 2 */}
+                            <div className="mb-4">
+                                <Link to="/">
+                                    <MDBBtn
+                                        color="outline-secondary"
+                                        className="w-100 d-flex align-items-center justify-content-center"
+                                        style={{
+                                            borderRadius: '25px',
+                                            padding: '8px 20px',
+                                            fontWeight: '600',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        <MDBIcon fas icon="home" className="me-2" />
+                                        Về Home
+                                    </MDBBtn>
+                                </Link>
+                            </div>
 
                             <div className="text-center">
                                 <p>or sign up with:</p>

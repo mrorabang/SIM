@@ -150,8 +150,8 @@ function Contact() {
     return (
         <MDBContainer fluid className="py-5">
             {/* Header Section */}
-            <div className="text-center mb-5 mt-4" >
-                <h1 className="fw-bold text-primary mb-3">Liên hệ với chúng tôi</h1>
+            <div className="text-center mb-5" >
+                <h1 className="fw-bold text-primary mb-1">Liên hệ với chúng tôi</h1>
                 <p className="text-muted fs-5">Chúng tôi luôn sẵn sàng hỗ trợ và lắng nghe ý kiến của bạn</p>
             </div>
 
