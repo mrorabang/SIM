@@ -90,6 +90,26 @@ export const deleteAccount = async (id) => {
     }
 };
 
+export const updateAccount = async (id, data) => {
+    try {
+        const response = await fetch(`https://683dc621199a0039e9e6d42d.mockapi.io/accounts/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error("Không thể cập nhật tài khoản!");
+        }
+
+        return await response.json();
+
+    } catch (error) {
+        console.error("Lỗi khi cập nhật tài khoản:", error);
+        throw error;
+    }
+};
+
 export const changePassword = async (id, data) => {
     try {
         const response = await fetch(`https://683dc621199a0039e9e6d42d.mockapi.io/accounts/${id}`, {

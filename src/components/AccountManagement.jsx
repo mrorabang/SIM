@@ -12,7 +12,7 @@ import {
     MDBBadge,
     MDBInput
 } from "mdb-react-ui-kit";
-import { changeStatusAPI, deleteAccount, getAccounts } from "../api/Accounts";
+import { changeStatusAPI, deleteAccount, getAccounts, updateAccount } from "../api/Accounts";
 import { showAlert, showConfirm } from "../service/AlertServices";
 import { useNavigate } from "react-router-dom";
 import { getAvatarUrl } from "../config/cloudinary";
@@ -22,6 +22,7 @@ function AccountManagement() {
     const [currentPage, setCurrentPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredAccounts, setFilteredAccounts] = useState([]);
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'pending'
     const itemsPerPage = 6;
     const nav = useNavigate();
 
@@ -34,16 +35,22 @@ function AccountManagement() {
         fetchData();
     }, []);
 
-    // Filter accounts based on search term
+    // Filter accounts based on search term and active tab
     useEffect(() => {
-        const filtered = accounts.filter(account =>
+        let filtered = accounts.filter(account =>
             account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             account.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
             account.role.toLowerCase().includes(searchTerm.toLowerCase())
         );
+
+        // Filter by approval status
+        if (activeTab === 'pending') {
+            filtered = filtered.filter(account => account.isApprove === false);
+        }
+
         setFilteredAccounts(filtered);
         setCurrentPage(0); // Reset to first page when filtering
-    }, [searchTerm, accounts]);
+    }, [searchTerm, accounts, activeTab]);
 
     // Hàm xử lý trạng thái tài khoản
     const changeStatus = async (id, currentStatus) => {
@@ -60,6 +67,27 @@ function AccountManagement() {
         } catch (error) {
             console.error("Lỗi khi cập nhật trạng thái:", error);
             showAlert("Cập nhật trạng thái thất bại. Vui lòng thử lại!", "warning");
+        }
+    };
+
+    // Hàm duyệt tài khoản
+    const approveAccount = async (id) => {
+        try {
+            const account = accounts.find(acc => acc.id === id);
+            if (!account) return;
+
+            const updatedAccount = await updateAccount(id, { ...account, isApprove: true });
+            if (updatedAccount) {
+                setAccounts(prevAccounts =>
+                    prevAccounts.map(acc =>
+                        acc.id === id ? updatedAccount : acc
+                    )
+                );
+                showAlert("Duyệt tài khoản thành công!", "success");
+            }
+        } catch (error) {
+            console.error("Lỗi khi duyệt tài khoản:", error);
+            showAlert("Duyệt tài khoản thất bại. Vui lòng thử lại!", "warning");
         }
     };
 
@@ -121,10 +149,16 @@ function AccountManagement() {
                                     <small className="text-muted">Tổng tài khoản</small>
                                 </div>
                                 <div className="text-center">
-                                    <div className="fw-bold text-success fs-4">
-                                        {filteredAccounts.filter(acc => acc.status).length}
+                                    <div className="fw-bold text-warning fs-4">
+                                        {filteredAccounts.filter(acc => acc.isApprove === false).length}
                                     </div>
-                                    <small className="text-muted">Đang hoạt động</small>
+                                    <small className="text-muted">Chờ duyệt</small>
+                                </div>
+                                <div className="text-center">
+                                    <div className="fw-bold text-success fs-4">
+                                        {filteredAccounts.filter(acc => acc.status && acc.isApprove).length}
+                                    </div>
+                                    <small className="text-muted">Đã duyệt</small>
                                 </div>
                                 <div className="text-center">
                                     <div className="fw-bold text-danger fs-4">
@@ -137,6 +171,30 @@ function AccountManagement() {
                     </MDBRow>
                 </MDBCardBody>
             </MDBCard>
+
+            {/* Tabs */}
+            <div className="mb-4">
+                <ul className="nav nav-tabs" id="accountTabs" role="tablist">
+                    <li className="nav-item" role="presentation">
+                        <button
+                            className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('all')}
+                        >
+                            <MDBIcon fas icon="users" className="me-2" />
+                            Tất cả ({accounts.length})
+                        </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                        <button
+                            className={`nav-link ${activeTab === 'pending' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('pending')}
+                        >
+                            <MDBIcon fas icon="clock" className="me-2" />
+                            Chờ duyệt ({accounts.filter(acc => acc.isApprove === false).length})
+                        </button>
+                    </li>
+                </ul>
+            </div>
 
             {/* Accounts Grid */}
             <MDBRow>
@@ -173,7 +231,10 @@ function AccountManagement() {
                                             </div>
                                         )}
                                         <MDBBadge
-                                            color={account.status ? "success" : "danger"}
+                                            color={
+                                                account.isApprove === false ? "warning" :
+                                                account.status ? "success" : "danger"
+                                            }
                                             className="position-absolute"
                                             style={{
                                                 top: '-5px',
@@ -187,7 +248,7 @@ function AccountManagement() {
                                                 fontSize: '10px'
                                             }}
                                         >
-                                            {account.status ? '✓' : '✗'}
+                                            {account.isApprove === false ? '⏳' : account.status ? '✓' : '✗'}
                                         </MDBBadge>
                                     </div>
                                     <div className="flex-grow-1">
@@ -208,6 +269,15 @@ function AccountManagement() {
                                         <span className="text-muted small">ID:</span>
                                         <span className="fw-bold small">#{account.id}</span>
                                     </div>
+                                    {/* Only show approval status if account is pending approval */}
+                                    {account.isApprove === false && (
+                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                            <span className="text-muted small">Duyệt:</span>
+                                            <span className="fw-bold small text-warning">
+                                                Chờ duyệt
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="d-flex justify-content-between align-items-center">
                                         <span className="text-muted small">Trạng thái:</span>
                                         <span className={`fw-bold small ${account.status ? 'text-success' : 'text-danger'}`}>
@@ -217,18 +287,35 @@ function AccountManagement() {
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="d-flex gap-1">
+                                <div className="d-flex gap-1 flex-wrap">
+                                    {/* Approve Button - only show for pending accounts */}
+                                    {account.isApprove === false && (
+                                        <MDBBtn
+                                            size="sm"
+                                            color="success"
+                                            onClick={() => approveAccount(account.id)}
+                                            className="flex-fill"
+                                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                                        >
+                                            <MDBIcon fas icon="check" className="me-1" />
+                                            Duyệt
+                                        </MDBBtn>
+                                    )}
+                                    
+                                    {/* Status Toggle Button */}
                                     <MDBBtn
                                         size="sm"
                                         color={account.status ? "danger" : "success"}
                                         onClick={() => changeStatus(account.id, account.status)}
-                                        disabled={account.role === "ADMIN"}
+                                        disabled={account.role === "ADMIN" || account.isApprove === false}
                                         className="flex-fill"
                                         style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
                                     >
                                         <MDBIcon fas icon={account.status ? "ban" : "check"} className="me-1" />
                                         {account.status ? "Khóa" : "Mở"}
                                     </MDBBtn>
+                                    
+                                    {/* Delete Button */}
                                     <MDBBtn
                                         size="sm"
                                         color="warning"

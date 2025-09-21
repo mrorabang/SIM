@@ -6,9 +6,11 @@ import {
     MDBCol,
     MDBCard,
     MDBCardBody,
+    MDBCardHeader,
     MDBInput,
     MDBCheckbox,
-    MDBIcon
+    MDBIcon,
+    MDBSpinner
 } from 'mdb-react-ui-kit';
 import { getAccounts } from "../api/Accounts";
 import {showAlert} from "../service/AlertServices";
@@ -21,6 +23,9 @@ function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
+    const [errors, setErrors] = useState({});
     const nav = useNavigate();
 
     // Lấy dữ liệu accounts từ API
@@ -30,32 +35,86 @@ function LoginPage() {
             setAccounts(data);
         }
         fetchData();
+    }, []);
 
-        }, []);
+    // Load saved username nếu có
+    useEffect(() => {
+        const savedUsername = localStorage.getItem("savedUsername");
+        const rememberMeStatus = localStorage.getItem("rememberMe");
+        if (savedUsername && rememberMeStatus === "true") {
+            setUsername(savedUsername);
+            setRememberMe(true);
+        }
+    }, []);
 
+
+    const validateForm = () => {
+        const newErrors = {};
+        
+        if (!username.trim()) {
+            newErrors.username = 'Vui lòng nhập tên đăng nhập';
+        }
+        
+        // if (!password.trim()) {
+        //     newErrors.password = 'Vui lòng nhập mật khẩu';
+        // } else if (password.length < 6) {
+        //     newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+        // }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleLogin = async () => {
-        // Tìm tài khoản theo username
-        const found = accounts.find(acc => acc.username === username);
-        if (!found) {
-            showAlert("Sai tài khoản hoặc mật khẩu", "error");
+        if (!validateForm()) {
             return;
         }
 
-        if (!found.status) {
-            showAlert("Tài khoản đã bị cấm, vui lòng liên hệ quản trị viên!", "danger");
-            return;
-        }
+        setIsLoading(true);
+        
+        try {
+            // Tìm tài khoản theo username
+            const found = accounts.find(acc => acc.username === username);
+            if (!found) {
+                showAlert("Sai tài khoản hoặc mật khẩu", "error");
+                return;
+            }
 
-        const isPasswordCorrect = await bcrypt.compare(password, found.password);
-        if (isPasswordCorrect) {
-            showAlert("Đăng nhập thành công", "success");
-            localStorage.setItem("user",JSON.stringify(found));
-            localStorage.setItem("authenticated", "true");
-            console.log(localStorage.getItem("user"));
-            nav('/');
-        } else {
-            showAlert("Sai tài khoản hoặc mật khẩu", "error");
+            if (!found.status) {
+                showAlert("Tài khoản đã bị cấm, vui lòng liên hệ quản trị viên!", "danger");
+                return;
+            }
+
+            if (found.isApprove === false) {
+                showAlert("Tài khoản của bạn chưa được admin duyệt. Vui lòng chờ phê duyệt hoặc liên hệ quản trị viên!", "warning");
+                return;
+            }
+
+            const isPasswordCorrect = await bcrypt.compare(password, found.password);
+            if (isPasswordCorrect) {
+                showAlert("Đăng nhập thành công", "success");
+                localStorage.setItem("user", JSON.stringify(found));
+                localStorage.setItem("authenticated", "true");
+                
+                if (rememberMe) {
+                    localStorage.setItem("rememberMe", "true");
+                    localStorage.setItem("savedUsername", username);
+                } else {
+                    localStorage.removeItem("rememberMe");
+                    localStorage.removeItem("savedUsername");
+                }
+                
+                // Dispatch custom event to update Menu component
+                window.dispatchEvent(new CustomEvent('userUpdated'));
+                
+                nav('/');
+            } else {
+                showAlert("Sai tài khoản hoặc mật khẩu", "error");
+            }
+        } catch (error) {
+            showAlert("Có lỗi xảy ra khi đăng nhập", "error");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -73,136 +132,245 @@ function LoginPage() {
 
 
     return (
-        <MDBContainer fluid className='p-4'>
-            {/* Nút Về Home */}
-            <div className="mb-4">
-                <Link to="/">
-                    <MDBBtn
-                        color="outline-primary"
-                        className="d-flex align-items-center"
-                        style={{
-                            borderRadius: '25px',
-                            padding: '8px 20px',
-                            fontWeight: '600',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        <MDBIcon fas icon="home" className="me-2" />
-                        Về Home
-                    </MDBBtn>
-                </Link>
-            </div>
-            
-            <MDBRow>
-                <MDBCol md='6' className='text-center text-md-start d-flex flex-column justify-content-center'>
-                    <h1 className="my-5 display-3 fw-bold ls-tight px-3">
-                        Công cụ tạo ảnh <br/>
-                        <span className="text-primary">Tiết kiệm thời gian</span>
-                    </h1>
-                    <p className='px-3' style={{color: 'hsl(217, 10%, 50.8%)'}}>
-                        Công cụ tạo ảnh và tải ảnh xuống là công cụ được phát triển bởi Minh Quân. Hãy
-                        sử dụng nó một cách tối ưu! Xin cảm ơn.
-                    </p>
-                </MDBCol>
+        <div className="min-vh-100 d-flex align-items-center" style={{ 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: '20px 0'
+        }}>
+            <MDBContainer fluid className="px-3">
+                {/* Header với nút về home */}
+                <div className="text-center mb-4">
+                    <Link to="/" className="text-decoration-none">
+                        <MDBBtn
+                            color="light"
+                            className="d-inline-flex align-items-center shadow-sm"
+                            style={{
+                                borderRadius: '25px',
+                                padding: '10px 25px',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease',
+                                border: 'none'
+                            }}
+                        >
+                            <MDBIcon fas icon="home" className="me-2" />
+                            Về Trang Chủ
+                        </MDBBtn>
+                    </Link>
+                </div>
 
-                <MDBCol md='6'>
-                    <MDBCard className='my-5'>
-                        <MDBCardBody className='p-5'>
-                            <MDBRow>
-                                <div className="text-center fs-1 fw-bold">Login</div>
-                            </MDBRow>
+                <MDBRow className="justify-content-center">
+                    <MDBCol xs="12" sm="10" md="8" lg="6" xl="5">
+                        <MDBCard className="shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+                            {/* Card Header */}
+                            <MDBCardHeader 
+                                className="text-center py-4" 
+                                style={{ 
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    border: 'none'
+                                }}
+                            >
+                                <MDBIcon icon="user-circle" size="3x" className="text-white mb-3" />
+                                <h2 className="text-white mb-0 fw-bold">Đăng Nhập</h2>
+                                <p className="text-white-50 mb-0">Chào mừng bạn quay trở lại!</p>
+                            </MDBCardHeader>
 
-                            <MDBInput
-                                wrapperClass='mb-4'
-                                label='Username'
-                                id='username'
-                                type='text'
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                            />
-                            
-                            <div className='mb-4 position-relative'>
-                                <MDBInput
-                                    label='Password'
-                                    id='password'
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    onKeyPress={handleKeyPress}
-                                />
-                                <button
-                                    type="button"
-                                    className="btn btn-link position-absolute"
-                                    style={{
-                                        right: '10px',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        border: 'none',
-                                        background: 'none',
-                                        padding: '0',
-                                        zIndex: '10'
-                                    }}
-                                    onClick={togglePasswordVisibility}
-                                >
-                                    <MDBIcon 
-                                        icon={showPassword ? 'eye-slash' : 'eye'} 
-                                        size="xl"
-                                        style={{ color: '#6c757d' }}
-                                    />
-                                </button>
-                            </div>
+                            <MDBCardBody className="p-4 p-md-5">
+                                {/* Form */}
+                                <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+                                    {/* Username Field */}
+                                    <div className="mb-4">
+                                        <label className="form-label fw-bold text-dark">
+                                            <MDBIcon icon="user" className="me-2 text-primary" />
+                                            Tên đăng nhập
+                                        </label>
+                                        <MDBInput
+                                            wrapperClass='mb-2'
+                                            id='username'
+                                            type='text'
+                                            value={username}
+                                            onChange={(e) => {
+                                                setUsername(e.target.value);
+                                                if (errors.username) {
+                                                    setErrors({...errors, username: ''});
+                                                }
+                                            }}
+                                            onKeyPress={handleKeyPress}
+                                            placeholder="Nhập tên đăng nhập của bạn..."
+                                            className={errors.username ? 'is-invalid' : ''}
+                                        />
+                                        {errors.username && (
+                                            <div className="text-danger small">
+                                                <MDBIcon icon="exclamation-triangle" className="me-1" />
+                                                {errors.username}
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Password Field */}
+                                    <div className="mb-4">
+                                        <label className="form-label fw-bold text-dark">
+                                            <MDBIcon icon="lock" className="me-2 text-primary" />
+                                            Mật khẩu
+                                        </label>
+                                        <div className="position-relative">
+                                            <MDBInput
+                                                wrapperClass='mb-2'
+                                                id='password'
+                                                type={showPassword ? 'text' : 'password'}
+                                                value={password}
+                                                onChange={(e) => {
+                                                    setPassword(e.target.value);
+                                                    if (errors.password) {
+                                                        setErrors({...errors, password: ''});
+                                                    }
+                                                }}
+                                                onKeyPress={handleKeyPress}
+                                                placeholder="Nhập mật khẩu của bạn..."
+                                                className={errors.password ? 'is-invalid' : ''}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn btn-link position-absolute"
+                                                style={{
+                                                    right: '15px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    border: 'none',
+                                                    background: 'none',
+                                                    padding: '0',
+                                                    zIndex: '10',
+                                                    color: '#6c757d'
+                                                }}
+                                                onClick={togglePasswordVisibility}
+                                            >
+                                                <MDBIcon 
+                                                    icon={showPassword ? 'eye-slash' : 'eye'} 
+                                                    size="lg"
+                                                />
+                                            </button>
+                                        </div>
+                                        {errors.password && (
+                                            <div className="text-danger small">
+                                                <MDBIcon icon="exclamation-triangle" className="me-1" />
+                                                {errors.password}
+                                            </div>
+                                        )}
+                                    </div>
 
-                            <div className='d-flex justify-content-center mb-4'>
-                                <MDBCheckbox name='flexCheck' value='' id='flexCheckDefault' label='Remember me'/>
-                            </div>
+                                    {/* Remember Me */}
+                                    <div className="d-flex justify-content-between align-items-center mb-4">
+                                        <MDBCheckbox 
+                                            name='rememberMe' 
+                                            id='rememberMe' 
+                                            label='Ghi nhớ đăng nhập'
+                                            checked={rememberMe}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
+                                        />
+                                        <Link to="#" className="text-decoration-none text-primary small">
+                                            Quên mật khẩu?
+                                        </Link>
+                                    </div>
 
-                            <MDBBtn className='w-100 mb-4' size='md' onClick={handleLogin}>Login</MDBBtn>
-
-                            {/* Nút Về Home thứ 2 */}
-                            <div className="mb-4">
-                                <Link to="/">
-                                    <MDBBtn
-                                        color="outline-secondary"
-                                        className="w-100 d-flex align-items-center justify-content-center"
-                                        style={{
-                                            borderRadius: '25px',
-                                            padding: '8px 20px',
-                                            fontWeight: '600',
-                                            transition: 'all 0.3s ease'
-                                        }}
+                                    {/* Login Button */}
+                                    <MDBBtn 
+                                        className='w-100 mb-4 py-3' 
+                                        size='lg' 
+                                        onClick={handleLogin}
+                                        disabled={isLoading}
+                                        style={{ borderRadius: '10px', fontWeight: '600' }}
                                     >
-                                        <MDBIcon fas icon="home" className="me-2" />
-                                        Về Home
+                                        {isLoading ? (
+                                            <>
+                                                <MDBSpinner size="sm" className="me-2" />
+                                                Đang đăng nhập...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <MDBIcon icon="sign-in-alt" className="me-2" />
+                                                Đăng Nhập
+                                            </>
+                                        )}
                                     </MDBBtn>
-                                </Link>
-                            </div>
+                                </form>
 
-                            <div className="text-center">
-                                <p>or sign up with:</p>
+                                {/* Divider */}
+                                {/* <div className="text-center mb-4">
+                                    <hr className="my-3" />
+                                    <span className="text-muted small bg-white px-3">Hoặc</span>
+                                </div> */}
 
-                                <MDBBtn tag='a' color='none' className='mx-3' style={{color: '#1266f1'}}>
-                                    <MDBIcon fab icon='facebook-f' size="sm"/>
-                                </MDBBtn>
+                                {/* Social Login */}
+                                {/* <div className="text-center mb-4">
+                                    <p className="text-muted small mb-3">Đăng nhập bằng tài khoản xã hội</p>
+                                    <div className="d-flex justify-content-center gap-3">
+                                        <MDBBtn 
+                                            tag='a' 
+                                            color='light' 
+                                            className='rounded-circle shadow-sm'
+                                            style={{ width: '45px', height: '45px', padding: '0' }}
+                                        >
+                                            <MDBIcon fab icon='google' style={{color: '#db4437'}}/>
+                                        </MDBBtn>
+                                        <MDBBtn 
+                                            tag='a' 
+                                            color='light' 
+                                            className='rounded-circle shadow-sm'
+                                            style={{ width: '45px', height: '45px', padding: '0' }}
+                                        >
+                                            <MDBIcon fab icon='facebook-f' style={{color: '#3b5998'}}/>
+                                        </MDBBtn>
+                                        <MDBBtn 
+                                            tag='a' 
+                                            color='light' 
+                                            className='rounded-circle shadow-sm'
+                                            style={{ width: '45px', height: '45px', padding: '0' }}
+                                        >
+                                            <MDBIcon fab icon='github' style={{color: '#333'}}/>
+                                        </MDBBtn>
+                                    </div>
+                                </div> */}
 
-                                <MDBBtn tag='a' color='none' className='mx-3' style={{color: '#1266f1'}}>
-                                    <MDBIcon fab icon='twitter' size="sm"/>
-                                </MDBBtn>
+                                {/* Register Link */}
+                                <div className="text-center">
+                                    <p className="text-muted mb-0">
+                                        Chưa có tài khoản? 
+                                        <Link to="/register" className="text-primary text-decoration-none fw-bold ms-1">
+                                            Đăng ký ngay
+                                        </Link>
+                                    </p>
+                                </div>
+                            </MDBCardBody>
+                        </MDBCard>
 
-                                <MDBBtn tag='a' color='none' className='mx-3' style={{color: '#1266f1'}}>
-                                    <MDBIcon fab icon='google' size="sm"/>
-                                </MDBBtn>
-
-                                <MDBBtn tag='a' color='none' className='mx-3' style={{color: '#1266f1'}}>
-                                    <MDBIcon fab icon='github' size="sm"/>
-                                </MDBBtn>
-                            </div>
-
-                        </MDBCardBody>
-                    </MDBCard>
-                </MDBCol>
-            </MDBRow>
-        </MDBContainer>
+                        {/* Features Card */}
+                        <MDBCard className="mt-4 shadow-sm" style={{ borderRadius: '15px' }}>
+                            <MDBCardBody className="p-4">
+                                <h5 className="text-center text-primary mb-3">
+                                    <MDBIcon icon="star" className="me-2" />
+                                    Tính năng nổi bật
+                                </h5>
+                                <MDBRow>
+                                    <MDBCol md="4" className="text-center mb-3">
+                                        <MDBIcon icon="images" size="2x" className="text-primary mb-2" />
+                                        <h6 className="text-dark">Tạo ảnh hàng loạt</h6>
+                                        <small className="text-muted">Tạo nhiều ảnh cùng lúc</small>
+                                    </MDBCol>
+                                    <MDBCol md="4" className="text-center mb-3">
+                                        <MDBIcon icon="download" size="2x" className="text-success mb-2" />
+                                        <h6 className="text-dark">Tải xuống nhanh</h6>
+                                        <small className="text-muted">Hỗ trợ nhiều định dạng</small>
+                                    </MDBCol>
+                                    <MDBCol md="4" className="text-center mb-3">
+                                        <MDBIcon icon="mobile-alt" size="2x" className="text-info mb-2" />
+                                        <h6 className="text-dark">Responsive</h6>
+                                        <small className="text-muted">Hoạt động mọi thiết bị</small>
+                                    </MDBCol>
+                                </MDBRow>
+                            </MDBCardBody>
+                        </MDBCard>
+                    </MDBCol>
+                </MDBRow>
+            </MDBContainer>
+        </div>
     );
 }
 

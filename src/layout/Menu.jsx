@@ -70,7 +70,7 @@ function Menu() {
     const [activeItem, setActiveItem] = useState("");
     
     // Lấy user từ localStorage với error handling và memoization
-    const user = React.useMemo(() => {
+    const [user, setUser] = React.useState(() => {
         try {
             const userData = localStorage.getItem("user");
             const isAuthenticated = localStorage.getItem("authenticated") === "true";
@@ -82,7 +82,34 @@ function Menu() {
             console.error("Lỗi khi parse user data:", error);
             return null;
         }
-    }, []); // Chỉ chạy một lần khi component mount
+    });
+
+    // Listen for storage changes to update user state
+    React.useEffect(() => {
+        const handleStorageChange = () => {
+            try {
+                const userData = localStorage.getItem("user");
+                const isAuthenticated = localStorage.getItem("authenticated") === "true";
+                if (!userData || !isAuthenticated) {
+                    setUser(null);
+                } else {
+                    setUser(JSON.parse(userData));
+                }
+            } catch (error) {
+                console.error("Lỗi khi parse user data:", error);
+                setUser(null);
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        // Also listen for custom events (for same-tab updates)
+        window.addEventListener('userUpdated', handleStorageChange);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('userUpdated', handleStorageChange);
+        };
+    }, []);
     
     const nav = useNavigate();
     const location = useLocation();
@@ -120,6 +147,8 @@ function Menu() {
         const confirm = await showConfirm("Bạn có chắc chắn muốn đăng xuất?", "warning");
         if (confirm) {
             localStorage.clear();
+            // Dispatch custom event to update Menu component
+            window.dispatchEvent(new CustomEvent('userUpdated'));
             nav("/");
             showAlert("Đã đăng xuất!", "success");
         }
@@ -270,7 +299,7 @@ function Menu() {
                     <MDBNavbarBrand className="navbar-brand-custom">
                         <div className="d-flex align-items-center">
                             <img
-                                src="./img/logo1.png"
+                                src={process.env.PUBLIC_URL + '/img/logo1.png'}
                                 width="120px"
                                 alt="SIM Logo"
                                 className="me-2"

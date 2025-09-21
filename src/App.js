@@ -10,6 +10,7 @@ import NotFound from "./components/NotFound";
 import Chat from "./components/Chat";
 import AccountManagement from "./components/AccountManagement";
 import CreateAccount from "./components/CreateAccount";
+import SaveAccount from "./components/SaveAccount";
 import Profile from "./components/Profile";
 import SimImageGenerator from "./components/SimImageGenerator";
 import HomePage from "./components/HomePage";
@@ -29,7 +30,6 @@ function App() {
                 <Route path="/login" element={
                     <>
                         <LoginPage />
-                        <Footer />
                     </>
                 } />
 
@@ -72,6 +72,12 @@ function App() {
                     </ProtectedRoute>
                 } />
 
+                <Route path="/register" element={
+                    <>
+                        <SaveAccount />
+                    </>
+                } />
+
                 <Route path="/profile" element={
                     <ProtectedRoute>
                         <Menu/>
@@ -102,14 +108,12 @@ function App() {
                                 </div>
                             </div>
                         </div>
-                        <Footer />
                     </ProtectedRoute>
                 } />
 
                 <Route path="*" element={
                     <>
                         <NotFound />
-                        <Footer />
                     </>
                 } />
 

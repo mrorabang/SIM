@@ -52,6 +52,7 @@ const SimImageGenerator = () => {
     const [selectedTextId, setSelectedTextId] = useState(null); // ID của text đang được chọn
     const [duplicateSims, setDuplicateSims] = useState([]); // Danh sách SIM trùng lặp
     const [showDuplicateChecker, setShowDuplicateChecker] = useState(false); // Hiển thị công cụ kiểm tra trùng
+    const [imageQuality, setImageQuality] = useState(2); // Chất lượng ảnh: 1=thường, 2=cao, 3=rất cao
     const stageRef = useRef(null);
     const [image] = useImage(backgroundImage);
 
@@ -118,55 +119,33 @@ const SimImageGenerator = () => {
         setSimData(parsedData);
     };
 
-    // Tính toán vị trí snap (auto căn chỉnh)
+    // Helper function để tính kích thước text
+    const calculateTextSize = (textConfig, textContent) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const fontString = `${textConfig.fontStyle} ${textConfig.fontWeight} ${textConfig.fontSize}px ${textConfig.fontFamily}`;
+        ctx.font = fontString;
+        const textMetrics = ctx.measureText(textContent);
+        return {
+            width: textMetrics.width,
+            height: textConfig.fontSize * 0.8
+        };
+    };
+
+    // Tính toán vị trí snap (auto căn chỉnh) - đã tắt hoàn toàn
     const calculateSnapPosition = (x, y, textWidth = 0, textHeight = 0) => {
-        if (!snapEnabled) return { x, y };
-        
-        const canvasWidth = 600;
-        const canvasHeight = 400;
-        const snapThreshold = 20; // Khoảng cách để snap
-        
-        let snappedX = x;
-        let snappedY = y;
-        
-        // Snap theo chiều ngang
-        const centerX = canvasWidth / 2;
-        const leftX = 0;
-        const rightX = canvasWidth - textWidth;
-        
-        if (Math.abs(x - centerX) < snapThreshold) {
-            snappedX = centerX - textWidth / 2;
-        } else if (Math.abs(x - leftX) < snapThreshold) {
-            snappedX = leftX;
-        } else if (Math.abs(x - rightX) < snapThreshold) {
-            snappedX = rightX;
-        }
-        
-        // Snap theo chiều dọc
-        const centerY = canvasHeight / 2;
-        const topY = 0;
-        const bottomY = canvasHeight - textHeight;
-        
-        if (Math.abs(y - centerY) < snapThreshold) {
-            snappedY = centerY - textHeight / 2;
-        } else if (Math.abs(y - topY) < snapThreshold) {
-            snappedY = topY;
-        } else if (Math.abs(y - bottomY) < snapThreshold) {
-            snappedY = bottomY;
-        }
-        
-        return { x: snappedX, y: snappedY };
+        // Tắt hoàn toàn chức năng auto snap
+        return { x, y };
     };
 
     // Cập nhật vị trí text khi kéo thả
     const handleTextDrag = (type, newPos) => {
-        const snappedPos = calculateSnapPosition(newPos.x, newPos.y);
         setTextConfig(prev => ({
             ...prev,
             [type]: {
                 ...prev[type],
-                x: Math.round(snappedPos.x),
-                y: Math.round(snappedPos.y)
+                x: Math.round(newPos.x),
+                y: Math.round(newPos.y)
             }
         }));
     };
@@ -252,21 +231,37 @@ const SimImageGenerator = () => {
         ));
     };
 
-    // Cập nhật vị trí custom text với snap
+    // Cập nhật vị trí custom text
     const updateCustomTextPosition = (textId, newPos) => {
-        const snappedPos = calculateSnapPosition(newPos.x, newPos.y);
         setCustomTexts(prev => prev.map(text => 
             text.id === textId ? { 
                 ...text, 
-                x: Math.round(snappedPos.x), 
-                y: Math.round(snappedPos.y) 
+                x: Math.round(newPos.x), 
+                y: Math.round(newPos.y) 
             } : text
         ));
     };
 
-    // Tạo border rectangle cho text được chọn
-    const createSelectionBorder = (textConfig, textWidth = 100, textHeight = 30) => {
-        const padding = 8; // Khoảng cách giữa text và border
+    // Tạo border rectangle cho text được chọn với kích thước chính xác
+    const createSelectionBorder = (textConfig, textContent = '') => {
+        const padding = 4; // Padding nhỏ để border sát text
+        
+        // Tính toán kích thước text dựa trên nội dung và font
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Cấu hình font giống như text thực tế
+        const fontString = `${textConfig.fontStyle} ${textConfig.fontWeight} ${textConfig.fontSize}px ${textConfig.fontFamily}`;
+        ctx.font = fontString;
+        
+        // Đo kích thước text thực tế
+        const textMetrics = ctx.measureText(textContent || 'Sample Text');
+        const textWidth = textMetrics.width;
+        
+        // Ước tính chiều cao text dựa trên font size
+        // Sử dụng hệ số nhỏ hơn để border sát text hơn
+        const textHeight = textConfig.fontSize * 0.8; // Giảm hệ số để sát text hơn
+        
         return {
             x: textConfig.x - padding,
             y: textConfig.y - padding,
@@ -381,11 +376,15 @@ const SimImageGenerator = () => {
                     return;
                 }
 
-                // Tạo canvas
+                // Tạo canvas với độ phân giải cao
+                const scale = imageQuality; // Sử dụng chất lượng đã chọn
                 const canvas = document.createElement('canvas');
-                canvas.width = 600;
-                canvas.height = 400;
+                canvas.width = 600 * scale; // 600px * scale
+                canvas.height = 400 * scale; // 400px * scale
                 const ctx = canvas.getContext('2d');
+                
+                // Scale context để vẽ với tỷ lệ cao
+                ctx.scale(scale, scale);
 
                 // Tạo image object mới
                 const img = new window.Image();
@@ -400,7 +399,7 @@ const SimImageGenerator = () => {
                         const simFont = `${textConfig.simNumber.fontStyle} ${textConfig.simNumber.fontWeight} ${textConfig.simNumber.fontSize}px ${textConfig.simNumber.fontFamily}`;
                         const priceFont = `${textConfig.price.fontStyle} ${textConfig.price.fontWeight} ${textConfig.price.fontSize}px ${textConfig.price.fontFamily}`;
 
-                        // Vẽ text số SIM
+                        // Vẽ text số SIM - tự động căn giữa cho từng text
                         ctx.font = simFont;
                         ctx.fillStyle = textConfig.simNumber.color;
                         ctx.strokeStyle = textConfig.simNumber.stroke;
@@ -411,12 +410,19 @@ const SimImageGenerator = () => {
                         ctx.shadowOffsetY = textConfig.simNumber.shadowOffset.y;
                         ctx.globalAlpha = textConfig.simNumber.opacity;
 
-                        if (textConfig.simNumber.strokeWidth > 0) {
-                            ctx.strokeText(simNumber || '0123456789', textConfig.simNumber.x, textConfig.simNumber.y);
-                        }
-                        ctx.fillText(simNumber || '0123456789', textConfig.simNumber.x, textConfig.simNumber.y);
+                        // Tính toán vị trí căn giữa cho text hiện tại
+                        const currentSimText = simNumber || '0123456789';
+                        const simTextMetrics = ctx.measureText(currentSimText);
+                        const simTextWidth = simTextMetrics.width;
+                        const simCenterX = 300; // 600/2 (không đổi vì đã scale context)
+                        const simTextX = simCenterX - simTextWidth / 2;
 
-                        // Vẽ text giá tiền
+                        if (textConfig.simNumber.strokeWidth > 0) {
+                            ctx.strokeText(currentSimText, simTextX, textConfig.simNumber.y);
+                        }
+                        ctx.fillText(currentSimText, simTextX, textConfig.simNumber.y);
+
+                        // Vẽ text giá tiền - tự động căn giữa cho từng text
                         ctx.font = priceFont;
                         ctx.fillStyle = textConfig.price.color;
                         ctx.strokeStyle = textConfig.price.stroke;
@@ -427,13 +433,19 @@ const SimImageGenerator = () => {
                         ctx.shadowOffsetY = textConfig.price.shadowOffset.y;
                         ctx.globalAlpha = textConfig.price.opacity;
 
+                        // Tính toán vị trí căn giữa cho text giá tiền hiện tại
                         const priceText = (price || '500000') + ' Triệu';
-                        if (textConfig.price.strokeWidth > 0) {
-                            ctx.strokeText(priceText, textConfig.price.x, textConfig.price.y);
-                        }
-                        ctx.fillText(priceText, textConfig.price.x, textConfig.price.y);
+                        const priceTextMetrics = ctx.measureText(priceText);
+                        const priceTextWidth = priceTextMetrics.width;
+                        const priceCenterX = 300; // 600/2 (không đổi vì đã scale context)
+                        const priceTextX = priceCenterX - priceTextWidth / 2;
 
-                        // Vẽ các text tùy chỉnh
+                        if (textConfig.price.strokeWidth > 0) {
+                            ctx.strokeText(priceText, priceTextX, textConfig.price.y);
+                        }
+                        ctx.fillText(priceText, priceTextX, textConfig.price.y);
+
+                        // Vẽ các text tùy chỉnh - tự động căn giữa cho từng text
                         customTexts.forEach(customText => {
                             ctx.font = `${customText.fontStyle} ${customText.fontWeight} ${customText.fontSize}px ${customText.fontFamily}`;
                             ctx.fillStyle = customText.color;
@@ -445,10 +457,16 @@ const SimImageGenerator = () => {
                             ctx.shadowOffsetY = customText.shadowOffset.y;
                             ctx.globalAlpha = customText.opacity;
 
+                            // Tính toán vị trí căn giữa cho custom text hiện tại
+                            const customTextMetrics = ctx.measureText(customText.content);
+                            const customTextWidth = customTextMetrics.width;
+                            const customCenterX = 300; // 600/2 (không đổi vì đã scale context)
+                            const customTextX = customCenterX - customTextWidth / 2;
+
                             if (customText.strokeWidth > 0) {
-                                ctx.strokeText(customText.content, customText.x, customText.y);
+                                ctx.strokeText(customText.content, customTextX, customText.y);
                             }
-                            ctx.fillText(customText.content, customText.x, customText.y);
+                            ctx.fillText(customText.content, customTextX, customText.y);
                         });
 
                         // Reset global alpha
@@ -1023,9 +1041,7 @@ const SimImageGenerator = () => {
                                             </optgroup>
                                         </select>
                                         
-                                        {/* Font Preview */}
                                         <div className="mt-2">
-                                            <small className="text-muted">Preview:</small>
                                             <div 
                                                 className="border rounded p-2 bg-light"
                                                 style={{ 
@@ -1145,7 +1161,7 @@ const SimImageGenerator = () => {
                                             />
                                         </div>
                                         <div className="col-4">
-                                            <label className="form-label small">Độ mờ:</label>
+                                            <label className="form-label small">Mờ:</label>
                                             <input
                                                 type="range"
                                                 className="form-range"
@@ -1156,7 +1172,7 @@ const SimImageGenerator = () => {
                                             />
                                         </div>
                                         <div className="col-4">
-                                            <label className="form-label small">Vị trí X:</label>
+                                            <label className="form-label small">X:</label>
                                             <input
                                                 type="range"
                                                 className="form-range"
@@ -1188,66 +1204,103 @@ const SimImageGenerator = () => {
                                 </div>
                             )}
 
-                            {/* Auto Snap Settings */}
+                            {/* Căn giữa thủ công */}
                             <div className="mb-3">
-                                <h6 className="text-info border-bottom pb-2">🎯 Auto Căn Chỉnh</h6>
-                                <div className="form-check form-switch">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        id="snapEnabled"
-                                        checked={snapEnabled}
-                                        onChange={(e) => setSnapEnabled(e.target.checked)}
-                                    />
-                                    <label className="form-check-label" htmlFor="snapEnabled">
-                                        Bật auto căn chỉnh khi kéo thả
-                                    </label>
-                                </div>
-                                <small className="text-muted">
-                                    Khi bật, text sẽ tự động căn chỉnh vào giữa, trái, phải, trên, dưới khi kéo gần các vị trí đó
-                                </small>
-                                <div className="form-check mt-2">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        id="showSnapGuides"
-                                        checked={showSnapGuides}
-                                        onChange={(e) => setShowSnapGuides(e.target.checked)}
-                                    />
-                                    <label className="form-check-label" htmlFor="showSnapGuides">
-                                        Hiển thị đường căn chỉnh
-                                    </label>
-                                </div>
+                                <h6 className="text-info border-bottom pb-2">🎯 Căn Chỉnh Text</h6>
+                                <button
+                                    className="btn btn-primary btn-sm w-100"
+                                    onClick={() => {
+                                        if (selectedTextId === 'simNumber') {
+                                            const textContent = simData.length > 0 ? simData[0].simNumber : "0123456789";
+                                            const { width: textWidth } = calculateTextSize(textConfig.simNumber, textContent);
+                                            const centerX = 300;
+                                            const newX = centerX - textWidth / 2;
+                                            
+                                            setTextConfig(prev => ({
+                                                ...prev,
+                                                simNumber: {
+                                                    ...prev.simNumber,
+                                                    x: Math.round(newX)
+                                                }
+                                            }));
+                                        } else if (selectedTextId === 'price') {
+                                            const textContent = simData.length > 0 ? simData[0].price + " Triệu" : "500,000 VNĐ";
+                                            const { width: textWidth } = calculateTextSize(textConfig.price, textContent);
+                                            const centerX = 300;
+                                            const newX = centerX - textWidth / 2;
+                                            
+                                            setTextConfig(prev => ({
+                                                ...prev,
+                                                price: {
+                                                    ...prev.price,
+                                                    x: Math.round(newX)
+                                                }
+                                            }));
+                                        } else if (selectedTextId && selectedTextId.startsWith('custom_')) {
+                                            const textId = parseInt(selectedTextId.split('_')[1]);
+                                            const customText = customTexts.find(text => text.id === textId);
+                                            if (customText) {
+                                                const { width: textWidth } = calculateTextSize(customText, customText.content);
+                                                const centerX = 300;
+                                                const newX = centerX - textWidth / 2;
+                                                
+                                                setCustomTexts(prev => prev.map(text => 
+                                                    text.id === textId ? { 
+                                                        ...text, 
+                                                        x: Math.round(newX)
+                                                    } : text
+                                                ));
+                                                showAlert('Đã căn giữa text tùy chỉnh!', 'success');
+                                            }
+                                        } else {
+                                            showAlert('Vui lòng chọn text để căn giữa!', 'warning');
+                                        }
+                                    }}
+                                    disabled={!selectedTextId}
+                                >
+                                    <i className="fas fa-align-center me-1"></i>
+                                    Căn giữa text được chọn
+                                </button>
                             </div>
 
-                            {/* Chọn định dạng tải xuống */}
+                            {/* Chất lượng ảnh */}
                             <div className="mb-3">
-                                <h6 className="text-dark border-bottom pb-2">📥 Định dạng tải xuống</h6>
-                                <div className="btn-group-vertical w-100 mb-2" role="group">
+                                <h6 className="text-success border-bottom pb-2">📸 Chất Lượng Ảnh</h6>
+                                <select
+                                    className="form-control form-control-sm"
+                                    value={imageQuality}
+                                    onChange={(e) => setImageQuality(parseInt(e.target.value))}
+                                >
+                                    <option value={1}>Thường (600x400px)</option>
+                                    <option value={2}>Cao (1200x800px)</option>
+                                    <option value={3}>Rất cao (1800x1200px)</option>
+                                    <option value={4}>Siêu cao (2400x1600px)</option>
+                                </select>
+                            </div>
+
+                            {/* Định dạng tải xuống */}
+                            <div className="mb-3">
+                                <h6 className="text-dark border-bottom pb-2">📥 Tải xuống</h6>
+                                <div className="btn-group-vertical w-100" role="group">
                                     <button 
                                         className={`btn ${downloadFormat === 'zip' ? 'btn-primary' : 'btn-outline-primary'} btn-sm mb-1`}
                                         onClick={() => setDownloadFormat('zip')}
                                     >
-                                        📦 File ZIP (Khuyến nghị)
+                                        📦 ZIP
                                     </button>
                                     <button 
                                         className={`btn ${downloadFormat === 'onebyone' ? 'btn-success' : 'btn-outline-success'} btn-sm mb-1`}
                                         onClick={() => setDownloadFormat('onebyone')}
                                     >
-                                        🖼️ Từng file PNG (Từng cái một)
+                                        🖼️ Từng file
                                     </button>
                                     <button 
                                         className={`btn ${downloadFormat === 'individual' ? 'btn-warning' : 'btn-outline-warning'} btn-sm`}
                                         onClick={() => setDownloadFormat('individual')}
                                     >
-                                        ⚡ Tất cả cùng lúc (Có thể bị chặn)
+                                        ⚡ Tất cả
                                     </button>
                                 </div>
-                                <small className="text-muted">
-                                    {downloadFormat === 'zip' && 'Tất cả ảnh trong 1 file ZIP - Ổn định nhất'}
-                                    {downloadFormat === 'onebyone' && 'Tải từng file một - Đảm bảo thành công'}
-                                    {downloadFormat === 'individual' && 'Tải tất cả cùng lúc - Nhanh nhưng có thể bị chặn'}
-                                </small>
                             </div>
 
                             {/* Nút tải xuống */}
@@ -1257,9 +1310,9 @@ const SimImageGenerator = () => {
                                 disabled={!backgroundImage || !simData.length || isGenerating}
                             >
                                 {isGenerating ? `Đang tạo... ${progress}%` : 
-                                 downloadFormat === 'zip' ? `📦 Tải ZIP (${simData.length} ảnh)` : 
-                                 downloadFormat === 'onebyone' ? `🖼️ Tải từng PNG (${simData.length} ảnh)` :
-                                 `⚡ Tải tất cả PNG (${simData.length} ảnh)`}
+                                 downloadFormat === 'zip' ? `📦 ZIP (${simData.length})` : 
+                                 downloadFormat === 'onebyone' ? `🖼️ Từng file (${simData.length})` :
+                                 `⚡ Tất cả (${simData.length})`}
                             </button>
                         </div>
                     </div>
@@ -1273,7 +1326,7 @@ const SimImageGenerator = () => {
                         </div>
                         <div className="card-body">
                             {backgroundImage ? (
-                                <div style={{ border: '1px solid #ccc', display: 'inline-block' }}>
+                                <div style={{ border: '1px solid #ccc', display: 'inline-block' }} className='img-thumbnail'>
                                     <Stage
                                         ref={stageRef}
                                         width={600}
@@ -1348,12 +1401,12 @@ const SimImageGenerator = () => {
                                             {/* Selection Border */}
                                             {selectedTextId === 'simNumber' && (
                                                 <Rect
-                                                    {...createSelectionBorder(textConfig.simNumber, 150, 30)}
+                                                    {...createSelectionBorder(textConfig.simNumber, simData.length > 0 ? simData[0].simNumber : "0123456789")}
                                                 />
                                             )}
                                             {selectedTextId === 'price' && (
                                                 <Rect
-                                                    {...createSelectionBorder(textConfig.price, 120, 25)}
+                                                    {...createSelectionBorder(textConfig.price, simData.length > 0 ? simData[0].price + " Triệu" : "500,000 VNĐ")}
                                                 />
                                             )}
                                             {selectedTextId && selectedTextId.startsWith('custom_') && (
@@ -1363,7 +1416,7 @@ const SimImageGenerator = () => {
                                                     if (customText) {
                                                         return (
                                                             <Rect
-                                                                {...createSelectionBorder(customText, customText.content.length * 8, 25)}
+                                                                {...createSelectionBorder(customText, customText.content)}
                                                             />
                                                         );
                                                     }
@@ -1391,15 +1444,14 @@ const SimImageGenerator = () => {
                                                 onTap={() => handleTextClick('simNumber')}
                                                 onDragEnd={(e) => handleTextDrag('simNumber', e.target.position())}
                                                 onDragMove={(e) => {
-                                                    // Cập nhật real-time khi kéo với snap
+                                                    // Cập nhật real-time khi kéo
                                                     const pos = e.target.position();
-                                                    const snappedPos = calculateSnapPosition(pos.x, pos.y);
                                                     setTextConfig(prev => ({
                                                         ...prev,
                                                         simNumber: {
                                                             ...prev.simNumber,
-                                                            x: Math.round(snappedPos.x),
-                                                            y: Math.round(snappedPos.y)
+                                                            x: Math.round(pos.x),
+                                                            y: Math.round(pos.y)
                                                         }
                                                     }));
                                                 }}
@@ -1425,15 +1477,14 @@ const SimImageGenerator = () => {
                                                 onTap={() => handleTextClick('price')}
                                                 onDragEnd={(e) => handleTextDrag('price', e.target.position())}
                                                 onDragMove={(e) => {
-                                                    // Cập nhật real-time khi kéo với snap
+                                                    // Cập nhật real-time khi kéo
                                                     const pos = e.target.position();
-                                                    const snappedPos = calculateSnapPosition(pos.x, pos.y);
                                                     setTextConfig(prev => ({
                                                         ...prev,
                                                         price: {
                                                             ...prev.price,
-                                                            x: Math.round(snappedPos.x),
-                                                            y: Math.round(snappedPos.y)
+                                                            x: Math.round(pos.x),
+                                                            y: Math.round(pos.y)
                                                         }
                                                     }));
                                                 }}
@@ -1466,7 +1517,13 @@ const SimImageGenerator = () => {
                                                     }}
                                                     onDragMove={(e) => {
                                                         const pos = e.target.position();
-                                                        updateCustomTextPosition(customText.id, pos);
+                                                        setCustomTexts(prev => prev.map(text => 
+                                                            text.id === customText.id ? { 
+                                                                ...text, 
+                                                                x: Math.round(pos.x), 
+                                                                y: Math.round(pos.y) 
+                                                            } : text
+                                                        ));
                                                     }}
                                                 />
                                             ))}
