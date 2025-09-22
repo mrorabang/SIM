@@ -1,0 +1,194 @@
+/* DragDropFileUpload Component Styles */
+.drag-drop-upload {
+    width: 100%;
+}
+
+.drop-zone {
+    transition: all 0.3s ease;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    background-color: #ffffff;
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.drop-zone:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.drop-zone.uploading {
+    border-color: #28a745;
+    background-color: #d4edda;
+    cursor: not-allowed;
+}
+
+.drop-content {
+    pointer-events: none;
+}
+
+.drop-content h5 {
+    color: #495057;
+    font-weight: 500;
+}
+
+.drop-content p {
+    font-size: 0.9rem;
+}
+
+.uploading-content {
+    pointer-events: none;
+}
+
+.uploading-content .spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+.preview-container {
+    margin-top: 1rem;
+}
+
+.preview-item {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.preview-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.preview-item img {
+    transition: transform 0.2s ease;
+}
+
+.preview-item:hover img {
+    transform: scale(1.05);
+}
+
+/* Preview drag and drop styles */
+.preview-item.dragging {
+    opacity: 0.5;
+    transform: scale(0.95) rotate(5deg);
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.preview-item.drag-over {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.preview-item.drag-over::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px dashed #007bff;
+    border-radius: 8px;
+    background: rgba(0, 123, 255, 0.1);
+    z-index: 1;
+}
+
+.drag-handle {
+    transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+    background: rgba(0, 0, 0, 0.8) !important;
+    transform: scale(1.1);
+}
+
+.preview-item:hover .drag-handle {
+    opacity: 1;
+}
+
+.preview-item .drag-handle {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.preview-info {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.preview-info small {
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+/* Animation for drag over effect */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.drop-zone.drag-over {
+    animation: pulse 0.5s ease-in-out infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .drop-zone {
+        padding: 1.5rem;
+        min-height: 100px;
+    }
+    
+    .drop-content h5 {
+        font-size: 1.1rem;
+    }
+    
+    .preview-item img {
+        height: 100px;
+    }
+}
+
+/* Custom scrollbar for preview container */
+.preview-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.preview-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.preview-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.preview-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

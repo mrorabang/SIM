@@ -8,6 +8,7 @@ import {
     MinChatUiProvider
 } from "@minchat/react-chat-ui";
 import { hybridAIService } from "../service/HybridAIService";
+import { localAIService } from "../service/LocalAIService";
 
 function Chat() {
     const [messages, setMessages] = useState([
@@ -17,10 +18,11 @@ function Chat() {
         }
     ]);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedModel, setSelectedModel] = useState("local-ai");
+    const [selectedModel, setSelectedModel] = useState("general-ai");
     const [selectedService, setSelectedService] = useState("Local AI");
-    const [availableModels, setAvailableModels] = useState(hybridAIService.getAvailableModels());
+    const [availableModels, setAvailableModels] = useState(localAIService.getAvailableModels());
     const [availableServices] = useState(hybridAIService.getAvailableServices());
+    const [currentModelInfo, setCurrentModelInfo] = useState(localAIService.getCurrentModel());
 
     const currentUserId = "user";
 
@@ -41,10 +43,16 @@ function Chat() {
                 .map(msg => `${msg.user.id === "ai" ? "AI" : "User"}: ${msg.text}`)
                 .join("\n");
 
-            const aiReply = await hybridAIService.sendMessage(text, conversationHistory);
+            let aiReply;
+            if (selectedService === "Local AI") {
+                aiReply = await localAIService.sendMessage(text, conversationHistory);
+            } else {
+                aiReply = await hybridAIService.sendMessage(text, conversationHistory);
+            }
+            
             const aiMessage = {
                 text: aiReply,
-                user: { id: "ai", name: "AI Assistant" }
+                user: { id: "ai", name: currentModelInfo ? currentModelInfo.name : "AI Assistant" }
             };
             setMessages(prev => [...prev, aiMessage]);
         } catch (err) {
@@ -61,15 +69,28 @@ function Chat() {
     // Thay đổi model
     const handleModelChange = (model) => {
         setSelectedModel(model);
-        hybridAIService.setModel(model);
+        if (selectedService === "Local AI") {
+            localAIService.setModel(model);
+            setCurrentModelInfo(localAIService.getCurrentModel());
+        } else {
+            hybridAIService.setModel(model);
+        }
     };
 
     // Thay đổi service
     const handleServiceChange = (service) => {
         setSelectedService(service);
         hybridAIService.setService(service);
+        
         // Cập nhật models khi thay đổi service
-        setAvailableModels(hybridAIService.getAvailableModels());
+        if (service === "Local AI") {
+            setAvailableModels(localAIService.getAvailableModels());
+            setCurrentModelInfo(localAIService.getCurrentModel());
+            setSelectedModel("general-ai");
+        } else {
+            setAvailableModels(hybridAIService.getAvailableModels());
+            setCurrentModelInfo(null);
+        }
     };
 
     // Xóa lịch sử chat
@@ -85,7 +106,7 @@ function Chat() {
             <MainContainer style={{ height: '80vh' }}>
                 <MessageContainer>
                     <MessageHeader 
-                        title="Trò chuyện với AI (Local)"
+                        title={`Trò chuyện với AI - ${currentModelInfo ? currentModelInfo.name : selectedService}`}
                         rightElement={
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                                 <select 
@@ -138,6 +159,17 @@ function Chat() {
                             </div>
                         }
                     />
+                    {currentModelInfo && (
+                        <div style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#f8f9fa',
+                            borderBottom: '1px solid #e9ecef',
+                            fontSize: '12px',
+                            color: '#6c757d'
+                        }}>
+                            <strong>Model hiện tại:</strong> {currentModelInfo.name} - {currentModelInfo.description}
+                        </div>
+                    )}
                     <MessageList 
                         currentUserId={currentUserId} 
                         messages={messages} 

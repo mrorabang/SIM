@@ -5,6 +5,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { showAlert } from '../service/AlertServices';
 import Konva from 'konva';
+import './SimImageGenerator.css';
 
 const SimImageGenerator = () => {
     const [backgroundImage, setBackgroundImage] = useState(null);
@@ -53,12 +54,13 @@ const SimImageGenerator = () => {
     const [duplicateSims, setDuplicateSims] = useState([]); // Danh sách SIM trùng lặp
     const [showDuplicateChecker, setShowDuplicateChecker] = useState(false); // Hiển thị công cụ kiểm tra trùng
     const [imageQuality, setImageQuality] = useState(2); // Chất lượng ảnh: 1=thường, 2=cao, 3=rất cao
+    const [isDragOverPreview, setIsDragOverPreview] = useState(false); // Trạng thái drag over preview
     const stageRef = useRef(null);
+    const fileInputRef = useRef(null); // Ref cho hidden file input
     const [image] = useImage(backgroundImage);
 
-    // Xử lý upload ảnh
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
+    // Xử lý upload ảnh - cập nhật để hỗ trợ drag and drop
+    const handleImageUpload = (file) => {
         if (file) {
             setImageFile(file);
             const reader = new FileReader();
@@ -68,6 +70,61 @@ const SimImageGenerator = () => {
             reader.readAsDataURL(file);
         }
     };
+
+    // Xử lý drag từ preview vào canvas
+    const handlePreviewDragToCanvas = useCallback((imageData) => {
+        // Có thể thêm logic xử lý khi kéo ảnh từ preview vào canvas
+        // Ví dụ: thêm ảnh vào canvas, tạo layer mới, etc.
+        console.log('Dragged image to canvas:', imageData);
+        showAlert(`Đã kéo ảnh "${imageData.file.name}" vào canvas!`, 'info');
+    }, []);
+
+    // Xử lý drag and drop file vào preview area
+    const handlePreviewDragOver = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOverPreview(true);
+    }, []);
+
+    const handlePreviewDragLeave = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Chỉ clear khi rời khỏi preview area hoàn toàn
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            setIsDragOverPreview(false);
+        }
+    }, []);
+
+    const handlePreviewDrop = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOverPreview(false);
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0]; // Chỉ lấy file đầu tiên
+            if (file && file.type.startsWith('image/')) {
+                handleImageUpload(file);
+            } else {
+                showAlert('Vui lòng chọn file ảnh!', 'warning');
+            }
+        }
+    }, [handleImageUpload]);
+
+    // Xử lý click để chọn file
+    const handlePreviewClick = useCallback(() => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    }, []);
+
+    // Xử lý file input change
+    const handleFileInputChange = useCallback((e) => {
+        const file = e.target.files[0];
+        if (file) {
+            handleImageUpload(file);
+        }
+    }, [handleImageUpload]);
 
     // Xử lý danh sách SIM
     const handleSimListChange = (event) => {
@@ -376,15 +433,23 @@ const SimImageGenerator = () => {
                     return;
                 }
 
-                // Tạo canvas với độ phân giải cao
-                const scale = imageQuality; // Sử dụng chất lượng đã chọn
+                // Tạo canvas với kích thước cố định giống preview
                 const canvas = document.createElement('canvas');
-                canvas.width = 600 * scale; // 600px * scale
-                canvas.height = 400 * scale; // 400px * scale
+                canvas.width = 600; // Giữ nguyên kích thước như preview
+                canvas.height = 400; // Giữ nguyên kích thước như preview
                 const ctx = canvas.getContext('2d');
                 
-                // Scale context để vẽ với tỷ lệ cao
-                ctx.scale(scale, scale);
+                // Cải thiện chất lượng render
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                // Thiết lập DPI cao hơn cho chất lượng tốt hơn
+                const dpi = window.devicePixelRatio || 1;
+                if (dpi > 1) {
+                    canvas.width = 600 * dpi;
+                    canvas.height = 400 * dpi;
+                    ctx.scale(dpi, dpi);
+                }
 
                 // Tạo image object mới
                 const img = new window.Image();
@@ -392,14 +457,18 @@ const SimImageGenerator = () => {
                 
                 img.onload = () => {
                     try {
-                        // Vẽ ảnh nền
-                        ctx.drawImage(img, 0, 0, 600, 400);
+                        // Vẽ ảnh nền với kích thước phù hợp
+                        if (dpi > 1) {
+                            ctx.drawImage(img, 0, 0, 600, 400);
+                        } else {
+                            ctx.drawImage(img, 0, 0, 600, 400);
+                        }
 
                         // Cấu hình font cho text
                         const simFont = `${textConfig.simNumber.fontStyle} ${textConfig.simNumber.fontWeight} ${textConfig.simNumber.fontSize}px ${textConfig.simNumber.fontFamily}`;
                         const priceFont = `${textConfig.price.fontStyle} ${textConfig.price.fontWeight} ${textConfig.price.fontSize}px ${textConfig.price.fontFamily}`;
 
-                        // Vẽ text số SIM - tự động căn giữa cho từng text
+                        // Vẽ text số SIM - sử dụng chính xác vị trí từ preview
                         ctx.font = simFont;
                         ctx.fillStyle = textConfig.simNumber.color;
                         ctx.strokeStyle = textConfig.simNumber.stroke;
@@ -410,19 +479,15 @@ const SimImageGenerator = () => {
                         ctx.shadowOffsetY = textConfig.simNumber.shadowOffset.y;
                         ctx.globalAlpha = textConfig.simNumber.opacity;
 
-                        // Tính toán vị trí căn giữa cho text hiện tại
+                        // Sử dụng chính xác vị trí từ textConfig với điều chỉnh baseline
                         const currentSimText = simNumber || '0123456789';
-                        const simTextMetrics = ctx.measureText(currentSimText);
-                        const simTextWidth = simTextMetrics.width;
-                        const simCenterX = 300; // 600/2 (không đổi vì đã scale context)
-                        const simTextX = simCenterX - simTextWidth / 2;
-
+                        const simY = textConfig.simNumber.y + textConfig.simNumber.fontSize * 0.8; // Điều chỉnh baseline
                         if (textConfig.simNumber.strokeWidth > 0) {
-                            ctx.strokeText(currentSimText, simTextX, textConfig.simNumber.y);
+                            ctx.strokeText(currentSimText, textConfig.simNumber.x, simY);
                         }
-                        ctx.fillText(currentSimText, simTextX, textConfig.simNumber.y);
+                        ctx.fillText(currentSimText, textConfig.simNumber.x, simY);
 
-                        // Vẽ text giá tiền - tự động căn giữa cho từng text
+                        // Vẽ text giá tiền - sử dụng chính xác vị trí từ preview
                         ctx.font = priceFont;
                         ctx.fillStyle = textConfig.price.color;
                         ctx.strokeStyle = textConfig.price.stroke;
@@ -433,19 +498,15 @@ const SimImageGenerator = () => {
                         ctx.shadowOffsetY = textConfig.price.shadowOffset.y;
                         ctx.globalAlpha = textConfig.price.opacity;
 
-                        // Tính toán vị trí căn giữa cho text giá tiền hiện tại
+                        // Sử dụng chính xác vị trí từ textConfig với điều chỉnh baseline
                         const priceText = (price || '500000') + ' Triệu';
-                        const priceTextMetrics = ctx.measureText(priceText);
-                        const priceTextWidth = priceTextMetrics.width;
-                        const priceCenterX = 300; // 600/2 (không đổi vì đã scale context)
-                        const priceTextX = priceCenterX - priceTextWidth / 2;
-
+                        const priceY = textConfig.price.y + textConfig.price.fontSize * 0.8; // Điều chỉnh baseline
                         if (textConfig.price.strokeWidth > 0) {
-                            ctx.strokeText(priceText, priceTextX, textConfig.price.y);
+                            ctx.strokeText(priceText, textConfig.price.x, priceY);
                         }
-                        ctx.fillText(priceText, priceTextX, textConfig.price.y);
+                        ctx.fillText(priceText, textConfig.price.x, priceY);
 
-                        // Vẽ các text tùy chỉnh - tự động căn giữa cho từng text
+                        // Vẽ các text tùy chỉnh - sử dụng chính xác vị trí từ preview
                         customTexts.forEach(customText => {
                             ctx.font = `${customText.fontStyle} ${customText.fontWeight} ${customText.fontSize}px ${customText.fontFamily}`;
                             ctx.fillStyle = customText.color;
@@ -457,16 +518,12 @@ const SimImageGenerator = () => {
                             ctx.shadowOffsetY = customText.shadowOffset.y;
                             ctx.globalAlpha = customText.opacity;
 
-                            // Tính toán vị trí căn giữa cho custom text hiện tại
-                            const customTextMetrics = ctx.measureText(customText.content);
-                            const customTextWidth = customTextMetrics.width;
-                            const customCenterX = 300; // 600/2 (không đổi vì đã scale context)
-                            const customTextX = customCenterX - customTextWidth / 2;
-
+                            // Sử dụng chính xác vị trí từ customText với điều chỉnh baseline
+                            const customY = customText.y + customText.fontSize * 0.8; // Điều chỉnh baseline
                             if (customText.strokeWidth > 0) {
-                                ctx.strokeText(customText.content, customTextX, customText.y);
+                                ctx.strokeText(customText.content, customText.x, customY);
                             }
-                            ctx.fillText(customText.content, customTextX, customText.y);
+                            ctx.fillText(customText.content, customText.x, customY);
                         });
 
                         // Reset global alpha
@@ -718,17 +775,6 @@ const SimImageGenerator = () => {
                             scrollbarWidth: 'thin',
                             scrollbarColor: '#6c757d #f8f9fa'
                         }}>
-                            {/* Upload ảnh */}
-                            <div className="mb-3">
-                                <label className="form-label text-primary fw-bold">Upload ảnh</label>
-                                <input
-                                    type="file"
-                                    className="form-control"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                />
-                            </div>
-                        <hr className='pb-1'/>
                             {/* Danh sách SIM */}
                             <div className="mb-3">
                                 <label className="form-label text-primary fw-bold">Danh sách SIM:</label>
@@ -1321,12 +1367,85 @@ const SimImageGenerator = () => {
                 {/* Canvas preview */}
                 <div className="col-md-8">
                     <div className="card">
-                        <div className="card-header">
-                            <h5>Preview</h5>
+                        <div className="card-header d-flex justify-content-between align-items-center">
+                            <h5 className="mb-0">Preview</h5>
+                            <div className="d-flex gap-2">
+                                {backgroundImage && (
+                                    <button
+                                        type="button"
+                                        className={`btn btn-sm ${showSnapGuides ? 'btn-primary' : 'btn-outline-primary'}`}
+                                        onClick={() => setShowSnapGuides(!showSnapGuides)}
+                                        title={showSnapGuides ? 'Ẩn lưới căn chỉnh' : 'Hiện lưới căn chỉnh'}
+                                    >
+                                        <i className="fas fa-th me-1"></i>
+                                        {showSnapGuides ? 'Ẩn lưới' : 'Hiện lưới'}
+                                    </button>
+                                )}
+                                {backgroundImage && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={handlePreviewClick}
+                                        title="Thay đổi ảnh"
+                                    >
+                                        <i className="fas fa-image me-1"></i>
+                                        Thay đổi ảnh
+                                    </button>
+                                )}
+                            </div>
                         </div>
                         <div className="card-body">
-                            {backgroundImage ? (
-                                <div style={{ border: '1px solid #ccc', display: 'inline-block' }} className='img-thumbnail'>
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileInputChange}
+                                style={{ display: 'none' }}
+                            />
+                            
+                            <div 
+                                className={`preview-drop-zone ${isDragOverPreview ? 'drag-over' : ''}`}
+                                onDragOver={handlePreviewDragOver}
+                                onDragLeave={handlePreviewDragLeave}
+                                onDrop={handlePreviewDrop}
+                                onClick={handlePreviewClick}
+                                style={{
+                                    position: 'relative',
+                                    minHeight: '400px',
+                                    border: isDragOverPreview ? '3px dashed #007bff' : '1px solid #ccc',
+                                    borderRadius: '8px',
+                                    backgroundColor: isDragOverPreview ? '#e3f2fd' : 'transparent',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {backgroundImage ? (
+                                    <div 
+                                        style={{ border: '1px solid #ccc', display: 'inline-block' }} 
+                                        className='img-thumbnail'
+                                        onDragOver={(e) => {
+                                            e.preventDefault();
+                                            e.dataTransfer.dropEffect = 'copy';
+                                        }}
+                                        onDrop={(e) => {
+                                            e.preventDefault();
+                                            try {
+                                                const imageData = JSON.parse(e.dataTransfer.getData('application/json'));
+                                                if (imageData.type === 'image') {
+                                                    handlePreviewDragToCanvas(imageData);
+                                                }
+                                            } catch (error) {
+                                                console.error('Error handling drop:', error);
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Prevent opening file dialog when clicking on canvas
+                                        }}
+                                    >
                                     <Stage
                                         ref={stageRef}
                                         width={600}
@@ -1348,53 +1467,82 @@ const SimImageGenerator = () => {
                                             {/* Snap Guide Lines */}
                                             {showSnapGuides && snapEnabled && (
                                                 <>
-                                                    {/* Vertical center line */}
+                                                    {/* 3x3 Grid Lines */}
+                                                    {/* Vertical grid lines */}
+                                                    <Line
+                                                        points={[200, 0, 200, 400]}
+                                                        stroke="#007bff"
+                                                        strokeWidth={1}
+                                                        dash={[4, 4]}
+                                                        opacity={0.6}
+                                                    />
+                                                    <Line
+                                                        points={[400, 0, 400, 400]}
+                                                        stroke="#007bff"
+                                                        strokeWidth={1}
+                                                        dash={[4, 4]}
+                                                        opacity={0.6}
+                                                    />
+                                                    {/* Horizontal grid lines */}
+                                                    <Line
+                                                        points={[0, 133.33, 600, 133.33]}
+                                                        stroke="#007bff"
+                                                        strokeWidth={1}
+                                                        dash={[4, 4]}
+                                                        opacity={0.6}
+                                                    />
+                                                    <Line
+                                                        points={[0, 266.67, 600, 266.67]}
+                                                        stroke="#007bff"
+                                                        strokeWidth={1}
+                                                        dash={[4, 4]}
+                                                        opacity={0.6}
+                                                    />
+                                                    
+                                                    {/* Center lines (highlighted) */}
                                                     <Line
                                                         points={[300, 0, 300, 400]}
                                                         stroke="#ff0000"
-                                                        strokeWidth={1}
+                                                        strokeWidth={2}
                                                         dash={[5, 5]}
-                                                        opacity={0.5}
+                                                        opacity={0.8}
                                                     />
-                                                    {/* Horizontal center line */}
                                                     <Line
                                                         points={[0, 200, 600, 200]}
                                                         stroke="#ff0000"
-                                                        strokeWidth={1}
+                                                        strokeWidth={2}
                                                         dash={[5, 5]}
-                                                        opacity={0.5}
+                                                        opacity={0.8}
                                                     />
-                                                    {/* Left edge line */}
+                                                    
+                                                    {/* Edge lines */}
                                                     <Line
                                                         points={[0, 0, 0, 400]}
                                                         stroke="#00ff00"
                                                         strokeWidth={1}
                                                         dash={[3, 3]}
-                                                        opacity={0.3}
+                                                        opacity={0.4}
                                                     />
-                                                    {/* Right edge line */}
                                                     <Line
                                                         points={[600, 0, 600, 400]}
                                                         stroke="#00ff00"
                                                         strokeWidth={1}
                                                         dash={[3, 3]}
-                                                        opacity={0.3}
+                                                        opacity={0.4}
                                                     />
-                                                    {/* Top edge line */}
                                                     <Line
                                                         points={[0, 0, 600, 0]}
                                                         stroke="#00ff00"
                                                         strokeWidth={1}
                                                         dash={[3, 3]}
-                                                        opacity={0.3}
+                                                        opacity={0.4}
                                                     />
-                                                    {/* Bottom edge line */}
                                                     <Line
                                                         points={[0, 400, 600, 400]}
                                                         stroke="#00ff00"
                                                         strokeWidth={1}
                                                         dash={[3, 3]}
-                                                        opacity={0.3}
+                                                        opacity={0.4}
                                                     />
                                                 </>
                                             )}
@@ -1530,11 +1678,29 @@ const SimImageGenerator = () => {
                                         </Layer>
                                     </Stage>
                                 </div>
-                            ) : (
-                                <div className="text-center p-5" style={{ border: '2px dashed #ccc' }}>
-                                    <p>Vui lòng upload ảnh demo để bắt đầu</p>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="text-center p-5" style={{ 
+                                        border: isDragOverPreview ? '3px dashed #007bff' : '2px dashed #ccc',
+                                        backgroundColor: isDragOverPreview ? '#e3f2fd' : '#f8f9fa',
+                                        borderRadius: '8px',
+                                        transition: 'all 0.3s ease',
+                                        pointerEvents: 'none' // Prevent click on placeholder
+                                    }}>
+                                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+                                            {isDragOverPreview ? '📁' : '🖼️'}
+                                        </div>
+                                        <h5 className="mb-2">
+                                            {isDragOverPreview ? 'Thả ảnh vào đây' : 'Click hoặc kéo thả ảnh vào đây'}
+                                        </h5>
+                                        <p className="text-muted mb-3">
+                                            Chọn ảnh từ máy tính để bắt đầu tạo SIM
+                                        </p>
+                                        <small className="text-info">
+                                            Hỗ trợ: JPG, PNG, GIF, WebP (Tối đa 10MB)
+                                        </small>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,119 @@
+/* SimImageGenerator Component Styles */
+
+.preview-drop-zone {
+    position: relative;
+    min-height: 400px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.preview-drop-zone:hover:not(.drag-over) {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.preview-drop-zone.drag-over {
+    border: 3px dashed #007bff;
+    background-color: #e3f2fd;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.preview-drop-zone.drag-over::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px dashed #007bff;
+    border-radius: 8px;
+    background: rgba(0, 123, 255, 0.1);
+    z-index: 1;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}
+
+/* Canvas container styles */
+.img-thumbnail {
+    position: relative;
+    z-index: 2;
+}
+
+/* Upload area when no image */
+.upload-placeholder {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    text-align: center;
+    padding: 2rem;
+}
+
+.upload-placeholder.drag-over {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+    transform: scale(1.02);
+}
+
+.upload-placeholder .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.upload-placeholder.drag-over .upload-icon {
+    transform: scale(1.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .preview-drop-zone {
+        min-height: 300px;
+    }
+    
+    .upload-placeholder {
+        padding: 1.5rem;
+    }
+    
+    .upload-placeholder .upload-icon {
+        font-size: 2rem;
+    }
+}
+
+/* Smooth transitions */
+.preview-drop-zone,
+.upload-placeholder,
+.img-thumbnail {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects */
+.preview-drop-zone:hover:not(.drag-over) {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+/* Focus states for accessibility */
+.preview-drop-zone:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}

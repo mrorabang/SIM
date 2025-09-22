@@ -17,7 +17,8 @@ function Footer() {
                 <MDBRow className="align-items-center">
                     {/* Logo và tên website */}
                     <MDBCol lg="6" md="12" className="mb-4 mb-md-0 d-flex align-items-center">
-                        <img src="./img/logo1.png" width="60" alt="Logo" className="me-2" />
+                        <img src={process.env.PUBLIC_URL + '/img/logo1.png'}
+                            width="60" alt="Logo" className="me-2" />
                         <h6 className="text-muted m-0">© 2025 Minh Quan Web</h6>
                     </MDBCol>
 
