@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
 import { 
     sendOpenAIRequest, 
     createChatMessage, 
     processOpenAIResponse,
     OPENAI_CONFIG 
 } from '../config/openai';
+import {useState} from 'react';
 
 const OpenAIService = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -56,43 +56,18 @@ const OpenAIService = () => {
         }
     };
 
-    // Tạo nội dung sáng tạo
-    const generateCreativeContent = async (prompt, type = "text") => {
-        const systemPrompt = OPENAI_CONFIG.SYSTEM_PROMPTS.CREATIVE;
-        return await sendMessage(prompt, systemPrompt);
-    };
-
-    // Hỗ trợ lập trình
-    const generateCode = async (prompt) => {
-        const systemPrompt = OPENAI_CONFIG.SYSTEM_PROMPTS.CODE;
-        return await sendMessage(prompt, systemPrompt);
-    };
-
-    // Kiểm tra API key có hợp lệ không
-    const validateAPIKey = async () => {
-        try {
-            await sendMessage("Hello", "You are a helpful assistant.");
-            return true;
-        } catch (err) {
-            return false;
-        }
-    };
-
     return {
         sendMessage,
         sendChatMessage,
-        generateCreativeContent,
-        generateCode,
-        validateAPIKey,
         isLoading,
         error
     };
 };
 
-// Hook để sử dụng OpenAI service
-export const useOpenAI = () => {
-    return OpenAIService();
-};
-
-// Export service instance
 export default OpenAIService;
+
+// Hook for React components
+export const useOpenAI = () => {
+    const service = OpenAIService();
+    return service;
+};

@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children, adminOnly }) => {
         console.error("Lỗi khi parse user data:", error);
     }
     
-    console.log("ProtectedRoute - User:", user);
+    // console.log("ProtectedRoute - User:", user);
     
     if (!isAuthenticated || !user) {
         showAlert("Bạn cần đăng nhập để truy cập!", "warning");
