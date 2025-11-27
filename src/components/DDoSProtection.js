@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MDBSpinner, MDBContainer, MDBRow, MDBCol } from 'mdb-react-ui-kit';
+import { MDBSpinner, MDBContainer, MDBRow, MDBCol, MDBBtn } from 'mdb-react-ui-kit';
 import TurnstileWidget from './TurnstileWidget';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,11 +36,10 @@ const DDoSProtection = ({ children, onVerified }) => {
         sessionStorage.setItem('ddos_verify_time', Date.now().toString());
         setIsVerified(true);
         if (onVerified) onVerified();
-        
-        // Auto navigate to home after successful verification
-        setTimeout(() => {
-            navigate('/');
-        }, 1000);
+    };
+
+    const handleGoToHome = () => {
+        navigate('/');
     };
 
     const handleTurnstileError = () => {
@@ -97,10 +96,22 @@ const DDoSProtection = ({ children, onVerified }) => {
                                 </div>
                                 
                                 {turnstileToken && (
-                                    <div className="alert alert-success">
+                                    <div className="alert alert-success mb-4">
                                         <i className="fas fa-check-circle me-2"></i>
-                                        Xác minh thành công! Đang chuyển hướng...
+                                        Xác minh thành công! 
                                     </div>
+                                )}
+                                
+                                {turnstileToken && (
+                                    <MDBBtn 
+                                        color="success" 
+                                        size="lg" 
+                                        onClick={handleGoToHome}
+                                        className="w-100"
+                                    >
+                                        <i className="fas fa-home me-2"></i>
+                                        Về Trang Chủ
+                                    </MDBBtn>
                                 )}
                                 
                                 <small className="text-muted">
