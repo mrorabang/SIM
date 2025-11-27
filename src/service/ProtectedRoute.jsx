@@ -2,9 +2,10 @@ import { Navigate } from 'react-router-dom';
 import { showAlert } from "./AlertServices";
 
 const ProtectedRoute = ({ children, adminOnly }) => {
+    // Simple validation with localStorage
     const isAuthenticated = localStorage.getItem("authenticated") === "true";
     
-    // Lấy user data với error handling
+    // Get user data
     let user = null;
     try {
         const userData = localStorage.getItem("user");
@@ -15,14 +16,13 @@ const ProtectedRoute = ({ children, adminOnly }) => {
         console.error("Lỗi khi parse user data:", error);
     }
     
-    // console.log("ProtectedRoute - User:", user);
-    
+    // Check if user exists and is authenticated
     if (!isAuthenticated || !user) {
         showAlert("Bạn cần đăng nhập để truy cập!", "warning");
         return <Navigate to="/login" />;
     }
 
-    // Kiểm tra quyền truy cập, nếu role là USER và cần ADMIN → Chuyển về trang chính
+    // Check admin role
     if (adminOnly && user?.role !== "ADMIN") {
         showAlert("Bạn không có quyền truy cập vào trang này!", "warning");
         return <Navigate to="/" />;

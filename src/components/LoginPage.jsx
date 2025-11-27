@@ -16,6 +16,8 @@ import { getAccounts } from "../api/Accounts";
 import {showAlert} from "../service/AlertServices";
 import {useNavigate, Link} from "react-router-dom";
 import bcrypt from 'bcryptjs';
+import TurnstileWidget from './TurnstileWidget';
+import AuthService from "../service/AuthService";
 
 
 function LoginPage() {
@@ -26,6 +28,8 @@ function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [errors, setErrors] = useState({});
+    const [turnstileToken, setTurnstileToken] = useState('');
+    const [turnstileResetKey, setTurnstileResetKey] = useState(0);
     const nav = useNavigate();
 
     // Lấy dữ liệu accounts từ API
@@ -55,11 +59,9 @@ function LoginPage() {
             newErrors.username = 'Vui lòng nhập tên đăng nhập';
         }
         
-        // if (!password.trim()) {
-        //     newErrors.password = 'Vui lòng nhập mật khẩu';
-        // } else if (password.length < 6) {
-        //     newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-        // }
+        if (!turnstileToken) {
+            newErrors.turnstile = 'Vui lòng xác minh bạn không phải là robot';
+        }
         
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -70,29 +72,54 @@ function LoginPage() {
             return;
         }
 
+        // Rate limiting check
+        try {
+            AuthService.canAttemptLogin();
+        } catch (error) {
+            showAlert(error.message, "error");
+            return;
+        }
+
         setIsLoading(true);
         
         try {
             // Tìm tài khoản theo username
             const found = accounts.find(acc => acc.username === username);
             if (!found) {
+                AuthService.recordLoginAttempt(false);
                 showAlert("Sai tài khoản hoặc mật khẩu", "error");
+                setTurnstileToken('');
+                setTurnstileResetKey(prev => prev + 1);
                 return;
             }
 
             if (!found.status) {
+                AuthService.recordLoginAttempt(false);
                 showAlert("Tài khoản đã bị cấm, vui lòng liên hệ quản trị viên!", "danger");
+                setTurnstileToken('');
+                setTurnstileResetKey(prev => prev + 1);
                 return;
             }
 
             if (found.isApprove === false) {
+                AuthService.recordLoginAttempt(false);
                 showAlert("Tài khoản của bạn chưa được admin duyệt. Vui lòng chờ phê duyệt hoặc liên hệ quản trị viên!", "warning");
+                setTurnstileToken('');
+                setTurnstileResetKey(prev => prev + 1);
                 return;
             }
 
             const isPasswordCorrect = await bcrypt.compare(password, found.password);
             if (isPasswordCorrect) {
+                // Record successful login attempt
+                AuthService.recordLoginAttempt(true);
+                
+                // Create secure session
+                AuthService.generateSessionToken(found);
+                
                 showAlert("Đăng nhập thành công", "success");
+                
+                // Update old localStorage for compatibility
                 localStorage.setItem("user", JSON.stringify(found));
                 localStorage.setItem("authenticated", "true");
                 
@@ -109,10 +136,16 @@ function LoginPage() {
                 
                 nav('/');
             } else {
+                AuthService.recordLoginAttempt(false);
                 showAlert("Sai tài khoản hoặc mật khẩu", "error");
+                setTurnstileToken('');
+                setTurnstileResetKey(prev => prev + 1);
             }
         } catch (error) {
+            AuthService.recordLoginAttempt(false);
             showAlert("Có lỗi xảy ra khi đăng nhập", "error");
+            setTurnstileToken('');
+            setTurnstileResetKey(prev => prev + 1);
         } finally {
             setIsLoading(false);
         }
@@ -268,6 +301,28 @@ function LoginPage() {
                                         <Link to="#" className="text-decoration-none text-primary small">
                                             Quên mật khẩu?
                                         </Link>
+                                    </div>
+
+                                    {/* Turnstile Verification */}
+                                    <div className="mb-4">
+                                        <TurnstileWidget 
+                                            onVerify={(token) => setTurnstileToken(token)}
+                                            onExpire={() => {
+                                                setTurnstileToken('');
+                                                setErrors({...errors, turnstile: 'Phiên xác minh đã hết hạn, vui lòng thử lại'});
+                                            }}
+                                            onError={() => {
+                                                setTurnstileToken('');
+                                                setErrors({...errors, turnstile: 'Lỗi xác minh, vui lòng thử lại'});
+                                            }}
+                                            resetKey={turnstileResetKey}
+                                        />
+                                        {errors.turnstile && (
+                                            <div className="text-danger small mt-2">
+                                                <MDBIcon icon="exclamation-triangle" className="me-1" />
+                                                {errors.turnstile}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Login Button */}
