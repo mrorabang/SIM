@@ -14,11 +14,11 @@ import SaveAccount from "./components/SaveAccount";
 import Profile from "./components/Profile";
 import SimImageGenerator from "./components/SimImageGenerator";
 import HomePage from "./components/HomePage";
+import DDoSProtection from "./components/DDoSProtection";
 
 function App() {
     return (
-        <>
-
+        <DDoSProtection>
             <Routes>
                 <Route path="/" element={
                     <>
@@ -117,7 +117,7 @@ function App() {
                 } />
 
             </Routes>
-        </>
+        </DDoSProtection>
 
     );
 }
