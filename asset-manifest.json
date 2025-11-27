@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/SIM/static/css/main.b7b4d037.css",
-    "main.js": "/SIM/static/js/main.5541eb7c.js",
+    "main.js": "/SIM/static/js/main.8963c7b6.js",
     "static/js/453.484e7bd7.chunk.js": "/SIM/static/js/453.484e7bd7.chunk.js",
     "static/media/fa-solid-900.ttf": "/SIM/static/media/fa-solid-900.2582b0e4bcf85eceead0.ttf",
     "static/media/fa-brands-400.ttf": "/SIM/static/media/fa-brands-400.1815e00441357e01619e.ttf",
@@ -13,11 +13,11 @@
     "static/media/fa-v4compatibility.woff2": "/SIM/static/media/fa-v4compatibility.ea8f94e1d22e0d35ccd4.woff2",
     "index.html": "/SIM/index.html",
     "main.b7b4d037.css.map": "/SIM/static/css/main.b7b4d037.css.map",
-    "main.5541eb7c.js.map": "/SIM/static/js/main.5541eb7c.js.map",
+    "main.8963c7b6.js.map": "/SIM/static/js/main.8963c7b6.js.map",
     "453.484e7bd7.chunk.js.map": "/SIM/static/js/453.484e7bd7.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b7b4d037.css",
-    "static/js/main.5541eb7c.js"
+    "static/js/main.8963c7b6.js"
   ]
 }
