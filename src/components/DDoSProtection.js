@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { MDBSpinner, MDBContainer, MDBRow, MDBCol } from 'mdb-react-ui-kit';
 import TurnstileWidget from './TurnstileWidget';
+import { useNavigate } from 'react-router-dom';
 
 const DDoSProtection = ({ children, onVerified }) => {
     const [isVerified, setIsVerified] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [turnstileToken, setTurnstileToken] = useState('');
     const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Check if user already verified in this session
@@ -34,6 +36,11 @@ const DDoSProtection = ({ children, onVerified }) => {
         sessionStorage.setItem('ddos_verify_time', Date.now().toString());
         setIsVerified(true);
         if (onVerified) onVerified();
+        
+        // Auto navigate to home after successful verification
+        setTimeout(() => {
+            navigate('/');
+        }, 1000);
     };
 
     const handleTurnstileError = () => {
@@ -88,6 +95,13 @@ const DDoSProtection = ({ children, onVerified }) => {
                                         />
                                     </div>
                                 </div>
+                                
+                                {turnstileToken && (
+                                    <div className="alert alert-success">
+                                        <i className="fas fa-check-circle me-2"></i>
+                                        Xác minh thành công! Đang chuyển hướng...
+                                    </div>
+                                )}
                                 
                                 <small className="text-muted">
                                     <i className="fas fa-info-circle me-1"></i>
