@@ -1,24 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {
-    MDBBtn,
-    MDBContainer,
-    MDBRow,
-    MDBCol,
-    MDBCard,
-    MDBCardBody,
-    MDBCardHeader,
-    MDBInput,
-    MDBCheckbox,
-    MDBIcon,
-    MDBSpinner
-} from 'mdb-react-ui-kit';
-import { getAccounts } from "../api/Accounts";
-import {showAlert} from "../service/AlertServices";
-import {useNavigate, Link} from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { MDBContainer, MDBRow, MDBCol, MDBInput, MDBBtn, MDBCheckbox, MDBIcon, MDBSpinner, MDBCard, MDBCardHeader, MDBCardBody } from 'mdb-react-ui-kit';
+import { Link, useNavigate } from 'react-router-dom';
+import { showAlert } from "../service/AlertServices";
 import bcrypt from 'bcryptjs';
 import TurnstileWidget from './TurnstileWidget';
-import AuthService from "../service/AuthService";
-
+import Honeypot from './Honeypot';
+import { getAccounts } from '../api/Accounts';
+import AuthService from '../service/AuthService';
 
 function LoginPage() {
     const [accounts, setAccounts] = useState([]);
@@ -58,6 +46,9 @@ function LoginPage() {
         if (!username.trim()) {
             newErrors.username = 'Vui lòng nhập tên đăng nhập';
         }
+        
+        // Debug: Check turnstile token
+        console.log('Turnstile token in validateForm:', turnstileToken);
         
         // Always require Turnstile verification for login
         if (!turnstileToken) {
@@ -166,11 +157,16 @@ function LoginPage() {
 
 
     return (
-        <div className="min-vh-100 d-flex align-items-center" style={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            padding: '20px 0'
-        }}>
-            <MDBContainer fluid className="px-3">
+        <>
+            <Honeypot onBotDetected={(info) => {
+                console.log('Bot detected in login:', info);
+                // Could block login or add extra verification
+            }} />
+            <div className="min-vh-100 d-flex align-items-center" style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '20px 0'
+            }}>
+                <MDBContainer fluid className="px-3">
                 {/* Header với nút về home */}
                 <div className="text-center mb-4">
                     <Link to="/" className="text-decoration-none">
@@ -307,12 +303,17 @@ function LoginPage() {
                                     {/* Turnstile Verification */}
                                     <div className="mb-4">
                                         <TurnstileWidget 
-                                            onVerify={(token) => setTurnstileToken(token)}
+                                            onVerify={(token) => {
+                                                console.log('LoginPage - Turnstile verified with token:', token);
+                                                setTurnstileToken(token);
+                                            }}
                                             onExpire={() => {
+                                                console.log('LoginPage - Turnstile expired');
                                                 setTurnstileToken('');
                                                 setErrors({...errors, turnstile: 'Phiên xác minh đã hết hạn, vui lòng thử lại'});
                                             }}
                                             onError={() => {
+                                                console.log('LoginPage - Turnstile error');
                                                 setTurnstileToken('');
                                                 setErrors({...errors, turnstile: 'Lỗi xác minh, vui lòng thử lại'});
                                             }}
@@ -426,7 +427,8 @@ function LoginPage() {
                     </MDBCol>
                 </MDBRow>
             </MDBContainer>
-        </div>
+            </div>
+        </>
     );
 }
 

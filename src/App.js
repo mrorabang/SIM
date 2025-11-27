@@ -15,6 +15,7 @@ import Profile from "./components/Profile";
 import SimImageGenerator from "./components/SimImageGenerator";
 import HomePage from "./components/HomePage";
 import DDoSProtection from "./components/DDoSProtection";
+import AttackMonitor from "./components/AttackMonitor";
 
 function App() {
     return (
@@ -79,9 +80,21 @@ function App() {
 
                 <Route path="/profile" element={
                     <ProtectedRoute>
-                        <Menu/>
-                        <Profile />
-                        <Footer />
+                        <>
+                            <Menu/>
+                            <Profile />
+                            <Footer />
+                        </>
+                    </ProtectedRoute>
+                } />
+                
+                <Route path="/attack-monitor" element={
+                    <ProtectedRoute adminOnly>
+                        <>
+                            <Menu/>
+                            <AttackMonitor />
+                            <Footer />
+                        </>
                     </ProtectedRoute>
                 } />
 
@@ -118,7 +131,6 @@ function App() {
 
             </Routes>
         </DDoSProtection>
-
     );
 }
 

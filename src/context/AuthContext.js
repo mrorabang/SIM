@@ -94,21 +94,31 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkAuth = () => {
             try {
-                const user = AuthService.getCurrentUser();
-                const isValid = AuthService.isSessionValid();
+                // Simple localStorage check instead of AuthService
+                const isAuthenticated = localStorage.getItem("authenticated") === "true";
+                const userData = localStorage.getItem("user");
+                let user = null;
                 
-                if (user && isValid) {
+                if (userData) {
+                    user = JSON.parse(userData);
+                }
+                
+                if (user && isAuthenticated) {
                     dispatch({
                         type: AUTH_ACTIONS.LOGIN_SUCCESS,
                         payload: { user }
                     });
                 } else {
-                    AuthService.logout();
+                    // Simple logout
+                    localStorage.removeItem("authenticated");
+                    localStorage.removeItem("user");
                     dispatch({ type: AUTH_ACTIONS.SESSION_EXPIRED });
                 }
             } catch (error) {
                 console.error('Auth check error:', error);
-                AuthService.logout();
+                // Simple logout
+                localStorage.removeItem("authenticated");
+                localStorage.removeItem("user");
                 dispatch({ type: AUTH_ACTIONS.SESSION_EXPIRED });
             }
         };
@@ -118,8 +128,8 @@ export const AuthProvider = ({ children }) => {
         // Setup periodic session check
         const interval = setInterval(checkAuth, 60000); // Check every minute
 
-        // Setup auto-logout for inactive sessions
-        AuthService.setupAutoLogout();
+        // Setup auto-logout for inactive sessions (simplified)
+        // Removed AuthService.setupAutoLogout() to avoid errors
 
         return () => clearInterval(interval);
     }, []);
@@ -129,18 +139,12 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: AUTH_ACTIONS.LOGIN_START });
 
         try {
-            // Rate limiting check
-            AuthService.canAttemptLogin();
-
-            // Simulate API call (replace with actual login logic)
-            // This would normally call your API
+            // Simplified login logic - just call mock API
             const user = await mockLoginApi(credentials);
 
-            // Record successful attempt
-            AuthService.recordLoginAttempt(true);
-
-            // Create secure session
-            AuthService.generateSessionToken(user);
+            // Store in localStorage
+            localStorage.setItem("authenticated", "true");
+            localStorage.setItem("user", JSON.stringify(user));
 
             dispatch({
                 type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -149,28 +153,22 @@ export const AuthProvider = ({ children }) => {
 
             return { success: true };
         } catch (error) {
-            // Record failed attempt
-            AuthService.recordLoginAttempt(false);
-
-            const isLocked = error.message.includes('khóa');
-            const lockoutEndTime = isLocked ? Date.now() + (15 * 60 * 1000) : null;
-
+            // Simplified error handling
             dispatch({
                 type: AUTH_ACTIONS.LOGIN_FAILURE,
-                payload: { 
-                    error: error.message,
-                    isLocked,
-                    lockoutEndTime
-                }
+                payload: { error: error.message || 'Login failed' }
             });
 
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || 'Login failed' };
         }
     };
 
     // Logout function
     const logout = () => {
-        AuthService.logout();
+        // Simple logout
+        localStorage.removeItem("authenticated");
+        localStorage.removeItem("user");
+        
         dispatch({ type: AUTH_ACTIONS.LOGOUT });
     };
 

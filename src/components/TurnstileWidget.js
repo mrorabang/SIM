@@ -7,16 +7,27 @@ const TurnstileWidget = ({ onVerify, onExpire, onError, resetKey }) => {
             <div style={{ minHeight: '65px' }}>
                 <Turnstile
                     siteKey={process.env.REACT_APP_CLOUDFLARE_TURNSTILE_SITE_KEY}
-                    onVerify={(token) => onVerify(token)}
-                    onExpire={() => onExpire && onExpire()}
-                    onError={() => onError && onError()}
+                    onVerify={(token) => {
+                        console.log('TurnstileWidget - onVerify called with token:', token);
+                        onVerify(token);
+                    }}
+                    onExpire={() => {
+                        console.log('TurnstileWidget - onExpire called');
+                        onExpire && onExpire();
+                    }}
+                    onError={() => {
+                        console.log('TurnstileWidget - onError called');
+                        onError && onError();
+                    }}
                     resetKey={resetKey}
                     options={{
                         theme: 'light',
                         size: 'normal',
                         retry: 'auto',
                         'retry-interval': 8000,
-                        'refresh-expired': 'auto'
+                        'refresh-expired': 'auto',
+                        action: 'login',
+                        appearance: 'always'
                     }}
                 />
             </div>
