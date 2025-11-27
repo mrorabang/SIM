@@ -59,6 +59,7 @@ function LoginPage() {
             newErrors.username = 'Vui lòng nhập tên đăng nhập';
         }
         
+        // Always require Turnstile verification for login
         if (!turnstileToken) {
             newErrors.turnstile = 'Vui lòng xác minh bạn không phải là robot';
         }

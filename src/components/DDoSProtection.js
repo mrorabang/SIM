@@ -79,12 +79,14 @@ const DDoSProtection = ({ children, onVerified }) => {
                                 </p>
                                 
                                 <div className="mb-4">
-                                    <TurnstileWidget 
-                                        onVerify={handleTurnstileVerify}
-                                        onExpire={handleTurnstileExpire}
-                                        onError={handleTurnstileError}
-                                        resetKey={turnstileResetKey}
-                                    />
+                                    <div style={{ minHeight: '65px' }}>
+                                        <TurnstileWidget 
+                                            onVerify={handleTurnstileVerify}
+                                            onExpire={handleTurnstileExpire}
+                                            onError={handleTurnstileError}
+                                            resetKey={turnstileResetKey}
+                                        />
+                                    </div>
                                 </div>
                                 
                                 <small className="text-muted">
