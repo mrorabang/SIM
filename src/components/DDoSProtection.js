@@ -30,6 +30,7 @@ const DDoSProtection = ({ children, onVerified }) => {
     }, [onVerified]);
 
     const handleTurnstileVerify = (token) => {
+        console.log('Turnstile verified with token:', token);
         setTurnstileToken(token);
         // Mark as verified for 1 hour
         sessionStorage.setItem('ddos_verified', 'true');
@@ -98,21 +99,20 @@ const DDoSProtection = ({ children, onVerified }) => {
                                 {turnstileToken && (
                                     <div className="alert alert-success mb-4">
                                         <i className="fas fa-check-circle me-2"></i>
-                                        Xác minh thành công! 
+                                        Xác minh thành công! Token: {turnstileToken.substring(0, 20)}...
                                     </div>
                                 )}
                                 
-                                {turnstileToken && (
-                                    <MDBBtn 
-                                        color="success" 
-                                        size="lg" 
-                                        onClick={handleGoToHome}
-                                        className="w-100"
-                                    >
-                                        <i className="fas fa-home me-2"></i>
-                                        Về Trang Chủ
-                                    </MDBBtn>
-                                )}
+                                <MDBBtn 
+                                    color={turnstileToken ? "success" : "secondary"} 
+                                    size="lg" 
+                                    onClick={turnstileToken ? handleGoToHome : undefined}
+                                    className="w-100"
+                                    disabled={!turnstileToken}
+                                >
+                                    <i className="fas fa-home me-2"></i>
+                                    {turnstileToken ? "Về Trang Chủ" : "Chờ Xác Minh..."}
+                                </MDBBtn>
                                 
                                 <small className="text-muted">
                                     <i className="fas fa-info-circle me-1"></i>
