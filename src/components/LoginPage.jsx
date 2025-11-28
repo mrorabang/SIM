@@ -3,7 +3,7 @@ import { MDBContainer, MDBRow, MDBCol, MDBInput, MDBBtn, MDBCheckbox, MDBIcon, M
 import { Link, useNavigate } from 'react-router-dom';
 import { showAlert } from "../service/AlertServices";
 import bcrypt from 'bcryptjs';
-import TurnstileWidget from './TurnstileWidget';
+import LoginReCAPTCHA from './LoginReCAPTCHA';
 import Honeypot from './Honeypot';
 import { getAccounts } from '../api/Accounts';
 import AuthService from '../service/AuthService';
@@ -14,10 +14,10 @@ function LoginPage() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
     const [errors, setErrors] = useState({});
-    const [turnstileToken, setTurnstileToken] = useState('');
-    const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+    const [rememberMe, setRememberMe] = useState(false);
+    const [recaptchaToken, setRecaptchaToken] = useState('');
+    const [recaptchaResetKey, setRecaptchaResetKey] = useState(0);
     const nav = useNavigate();
 
     // Lấy dữ liệu accounts từ API
@@ -47,12 +47,12 @@ function LoginPage() {
             newErrors.username = 'Vui lòng nhập tên đăng nhập';
         }
         
-        // Debug: Check turnstile token
-        console.log('Turnstile token in validateForm:', turnstileToken);
+        // Debug: Check reCAPTCHA token
+        console.log('reCAPTCHA token in validateForm:', recaptchaToken);
         
-        // Always require Turnstile verification for login
-        if (!turnstileToken) {
-            newErrors.turnstile = 'Vui lòng xác minh bạn không phải là robot';
+        // Always require reCAPTCHA verification for login
+        if (!recaptchaToken) {
+            newErrors.recaptcha = 'Vui lòng xác minh bạn không phải là robot';
         }
         
         setErrors(newErrors);
@@ -66,7 +66,7 @@ function LoginPage() {
 
         // Rate limiting check
         try {
-            AuthService.canAttemptLogin();
+            AuthService.canAttemptLogin(username);
         } catch (error) {
             showAlert(error.message, "error");
             return;
@@ -78,33 +78,33 @@ function LoginPage() {
             // Tìm tài khoản theo username
             const found = accounts.find(acc => acc.username === username);
             if (!found) {
-                AuthService.recordLoginAttempt(false);
+                AuthService.recordLoginAttempt(false, username);
                 showAlert("Sai tài khoản hoặc mật khẩu", "error");
-                setTurnstileToken('');
-                setTurnstileResetKey(prev => prev + 1);
+                setRecaptchaToken('');
+                setRecaptchaResetKey(prev => prev + 1);
                 return;
             }
 
             if (!found.status) {
-                AuthService.recordLoginAttempt(false);
+                AuthService.recordLoginAttempt(false, username);
                 showAlert("Tài khoản đã bị cấm, vui lòng liên hệ quản trị viên!", "danger");
-                setTurnstileToken('');
-                setTurnstileResetKey(prev => prev + 1);
+                setRecaptchaToken('');
+                setRecaptchaResetKey(prev => prev + 1);
                 return;
             }
 
             if (found.isApprove === false) {
-                AuthService.recordLoginAttempt(false);
+                AuthService.recordLoginAttempt(false, username);
                 showAlert("Tài khoản của bạn chưa được admin duyệt. Vui lòng chờ phê duyệt hoặc liên hệ quản trị viên!", "warning");
-                setTurnstileToken('');
-                setTurnstileResetKey(prev => prev + 1);
+                setRecaptchaToken('');
+                setRecaptchaResetKey(prev => prev + 1);
                 return;
             }
 
             const isPasswordCorrect = await bcrypt.compare(password, found.password);
             if (isPasswordCorrect) {
                 // Record successful login attempt
-                AuthService.recordLoginAttempt(true);
+                AuthService.recordLoginAttempt(true, username);
                 
                 // Create secure session
                 AuthService.generateSessionToken(found);
@@ -128,16 +128,16 @@ function LoginPage() {
                 
                 nav('/');
             } else {
-                AuthService.recordLoginAttempt(false);
+                AuthService.recordLoginAttempt(false, username);
                 showAlert("Sai tài khoản hoặc mật khẩu", "error");
-                setTurnstileToken('');
-                setTurnstileResetKey(prev => prev + 1);
+                setRecaptchaToken('');
+                setRecaptchaResetKey(prev => prev + 1);
             }
         } catch (error) {
-            AuthService.recordLoginAttempt(false);
+            AuthService.recordLoginAttempt(false, username);
             showAlert("Có lỗi xảy ra khi đăng nhập", "error");
-            setTurnstileToken('');
-            setTurnstileResetKey(prev => prev + 1);
+            setRecaptchaToken('');
+            setRecaptchaResetKey(prev => prev + 1);
         } finally {
             setIsLoading(false);
         }
@@ -300,29 +300,38 @@ function LoginPage() {
                                         </Link>
                                     </div>
 
-                                    {/* Turnstile Verification */}
+                                    {/* reCAPTCHA Verification */}
                                     <div className="mb-4">
-                                        <TurnstileWidget 
+                                        <LoginReCAPTCHA 
                                             onVerify={(token) => {
-                                                console.log('LoginPage - Turnstile verified with token:', token);
-                                                setTurnstileToken(token);
+                                                console.log('LoginPage - reCAPTCHA verified with token:', token);
+                                                setRecaptchaToken(token);
+                                                // Show success alert for captcha verification
+                                                try {
+                                                    showAlert('Xác minh captcha thành công! Bạn có thể đăng nhập.', 'success');
+                                                    console.log('Success alert sent for login captcha');
+                                                } catch (error) {
+                                                    console.error('Error showing alert:', error);
+                                                    // Fallback: use browser alert
+                                                    window.alert('Xác minh captcha thành công! Bạn có thể đăng nhập.');
+                                                }
                                             }}
                                             onExpire={() => {
-                                                console.log('LoginPage - Turnstile expired');
-                                                setTurnstileToken('');
-                                                setErrors({...errors, turnstile: 'Phiên xác minh đã hết hạn, vui lòng thử lại'});
+                                                console.log('LoginPage - reCAPTCHA expired');
+                                                setRecaptchaToken('');
+                                                setErrors({...errors, recaptcha: 'Phiên xác minh đã hết hạn, vui lòng thử lại'});
                                             }}
                                             onError={() => {
-                                                console.log('LoginPage - Turnstile error');
-                                                setTurnstileToken('');
-                                                setErrors({...errors, turnstile: 'Lỗi xác minh, vui lòng thử lại'});
+                                                console.log('LoginPage - reCAPTCHA error');
+                                                setRecaptchaToken('');
+                                                setErrors({...errors, recaptcha: 'Lỗi xác minh, vui lòng thử lại'});
                                             }}
-                                            resetKey={turnstileResetKey}
+                                            resetKey={recaptchaResetKey}
                                         />
-                                        {errors.turnstile && (
+                                        {errors.recaptcha && (
                                             <div className="text-danger small mt-2">
                                                 <MDBIcon icon="exclamation-triangle" className="me-1" />
-                                                {errors.turnstile}
+                                                {errors.recaptcha}
                                             </div>
                                         )}
                                     </div>
