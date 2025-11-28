@@ -82,13 +82,13 @@ const Honeypot = ({ onBotDetected }) => {
         setBotDetected(true);
 
         // Log to console
-        console.warn('🐞 BOT DETECTED:', info);
+        // console.warn('🐞 BOT DETECTED:', info);
 
         // Send email notification
         attackNotificationService.sendAttackNotification(info);
 
-        // Show alert
-        showAlert(`Bot detected! Reason: ${reason}`, 'warning');
+        // Show alert (disabled for stealth mode)
+        // showAlert(`Bot detected! Reason: ${reason}`, 'warning');
 
         // Call parent callback
         if (onBotDetected) {
@@ -110,27 +110,8 @@ const Honeypot = ({ onBotDetected }) => {
         handleBotDetection('honeypot_input', { fieldType: 'honeypot' });
     };
 
-    if (botDetected) {
-        return (
-            <div className="alert alert-warning position-fixed top-0 start-50 translate-middle-x mt-3" 
-                 style={{ zIndex: 9999, minWidth: '300px' }}>
-                <h6 className="alert-heading">
-                    <i className="fas fa-robot me-2"></i>
-                    Bot Activity Detected
-                </h6>
-                <small className="d-block">
-                    <strong>Reason:</strong> {attackerInfo.reason}<br/>
-                    <strong>Time:</strong> {attackerInfo.timestamp}<br/>
-                    <strong>User Agent:</strong> {attackerInfo.userAgent?.substring(0, 50)}...
-                </small>
-                <button 
-                    className="btn btn-sm btn-outline-warning mt-2"
-                    onClick={() => setBotDetected(false)}
-                >
-                    Dismiss
-                </button>
-            </div>
-        );
+    if (botDetected && attackerInfo) {
+        return null; // Don't show anything - stealth mode
     }
 
     return (

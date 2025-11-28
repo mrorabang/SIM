@@ -115,7 +115,7 @@ const DDoSProtection = ({ children, onVerified }) => {
         return (
             <>
                 <Honeypot onBotDetected={(info) => {
-                    console.log('Bot detected in DDoS protection:', info);
+                    // console.log('Bot detected in DDoS protection:', info);
                     // Could block access or add extra verification
                 }} />
                 <div className="min-vh-100 d-flex align-items-center justify-content-center" 

@@ -65,15 +65,15 @@ function Contact() {
         if (!validateForm()) return;
         
         // Kiểm tra email nhận
-        if (!recipientEmail) {
-            const email = prompt('Vui lòng nhập email của bạn để nhận tin nhắn liên hệ:');
-            if (!email) {
-                showAlert('Vui lòng nhập email để tiếp tục!', 'warning');
-                return;
-            }
-            setRecipientEmail(email);
-            localStorage.setItem('recipientEmail', email);
-        }
+        // if (!recipientEmail) {
+        //     const email = prompt('Vui lòng nhập email của bạn để nhận tin nhắn liên hệ:');
+        //     if (!email) {
+        //         showAlert('Vui lòng nhập email để tiếp tục!', 'warning');
+        //         return;
+        //     }
+        //     setRecipientEmail(email);
+        //     localStorage.setItem('recipientEmail', email);
+        // }
         
         setIsSubmitting(true);
         

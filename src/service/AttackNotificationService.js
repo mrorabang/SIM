@@ -1,8 +1,8 @@
 // Attack Notification Service
 class AttackNotificationService {
     constructor() {
-        this.ADMIN_EMAIL = 'your-email@example.com'; // Thay bằng email của bạn
-        this.ATTACK_ENDPOINT = 'https://formspree.io/f/your-form-id'; // Hoặc dùng email service khác
+        this.ADMIN_EMAIL = 'dangminhquan9320@gmail.com'; // Default admin email
+        this.ATTACK_ENDPOINT = 'https://formspree.io/f/xyzdrepv'; // Same endpoint as contact form
     }
 
     // Gửi email notification khi phát hiện tấn công
@@ -16,15 +16,15 @@ class AttackNotificationService {
                 await this.sendViaFormspree(subject, body);
             }
             
-            // Method 2: Dùng EmailJS (free tier)
-            else if (window.emailjs) {
-                await this.sendViaEmailJS(subject, body, attackInfo);
-            }
+            // // Method 2: Dùng EmailJS (free tier)
+            // else if (window.emailjs) {
+            //     await this.sendViaEmailJS(subject, body, attackInfo);
+            // }
             
-            // Method 3: Fallback - console + localStorage
-            else {
-                this.logAttackForLater(attackInfo, subject, body);
-            }
+            // // Method 3: Fallback - console + localStorage
+            // else {
+            //     this.logAttackForLater(attackInfo, subject, body);
+            // }
 
             console.log('📧 Attack notification sent successfully');
             
@@ -87,9 +87,12 @@ Please investigate immediately.
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
+                from_name: 'Security System',
+                from_email: 'security@system.com',
+                phone_number: 'N/A',
                 subject: subject,
                 message: body,
-                email: this.ADMIN_EMAIL
+                to_email: this.ADMIN_EMAIL
             })
         });
 
@@ -101,25 +104,25 @@ Please investigate immediately.
     }
 
     // Gửi qua EmailJS
-    async sendViaEmailJS(subject, body, attackInfo) {
-        const templateParams = {
-            to_email: this.ADMIN_EMAIL,
-            subject: subject,
-            message: body,
-            attack_reason: attackInfo.reason,
-            attack_time: attackInfo.timestamp,
-            user_agent: attackInfo.userAgent
-        };
+    // async sendViaEmailJS(subject, body, attackInfo) {
+    //     const templateParams = {
+    //         to_email: this.ADMIN_EMAIL,
+    //         subject: subject,
+    //         message: body,
+    //         attack_reason: attackInfo.reason,
+    //         attack_time: attackInfo.timestamp,
+    //         user_agent: attackInfo.userAgent
+    //     };
 
-        const response = await window.emailjs.send(
-            'service_your_service_id', // Service ID
-            'template_your_template_id', // Template ID
-            templateParams,
-            'your_public_key' // Public Key
-        );
+    //     const response = await window.emailjs.send(
+    //         'service_your_service_id', // Service ID
+    //         'template_your_template_id', // Template ID
+    //         templateParams,
+    //         'your_public_key' // Public Key
+    //     );
 
-        return response;
-    }
+    //     return response;
+    // }
 
     // Fallback: Lưu lại để gửi sau
     logAttackForLater(attackInfo, subject, body) {
@@ -190,7 +193,22 @@ Please investigate immediately.
         console.log('📧 Testing email notification service...');
         await this.sendAttackNotification(testAttack);
     }
+
+    // Quick test function for browser console
+    static quickTest() {
+        const service = new AttackNotificationService();
+        console.log('🚀 Starting bot attack test...');
+        service.testEmailService().then(() => {
+            console.log('✅ Test completed! Check your email.');
+        }).catch(error => {
+            console.error('❌ Test failed:', error);
+        });
+    }
 }
 
 const attackNotificationService = new AttackNotificationService();
 export default attackNotificationService;
+
+// Make available globally for testing
+window.testAttackNotification = () => AttackNotificationService.quickTest();
+window.attackNotificationService = attackNotificationService;
