@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { showAlert } from '../service/AlertServices';
 import attackNotificationService from '../service/AttackNotificationService';
+import fingerprintingService from '../service/FingerprintingService';
 
 const Honeypot = ({ onBotDetected }) => {
     const [botDetected, setBotDetected] = useState(false);
@@ -58,8 +58,11 @@ const Honeypot = ({ onBotDetected }) => {
         };
     }, []);
 
-    const handleBotDetection = (reason, data) => {
+    const handleBotDetection = async (reason, data) => {
         if (botDetected) return; // Only detect once
+
+        // Generate comprehensive fingerprint
+        const fingerprint = await fingerprintingService.generateFingerprint();
 
         const info = {
             timestamp: new Date().toISOString(),
@@ -75,7 +78,8 @@ const Honeypot = ({ onBotDetected }) => {
             },
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             url: window.location.href,
-            referrer: document.referrer
+            referrer: document.referrer,
+            fingerprint: fingerprint || null
         };
 
         setAttackerInfo(info);
@@ -84,7 +88,7 @@ const Honeypot = ({ onBotDetected }) => {
         // Log to console
         // console.warn('🐞 BOT DETECTED:', info);
 
-        // Send email notification
+        // Send email notification with fingerprint data
         attackNotificationService.sendAttackNotification(info);
 
         // Show alert (disabled for stealth mode)

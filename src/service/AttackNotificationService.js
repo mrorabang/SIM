@@ -1,8 +1,31 @@
 // Attack Notification Service
 class AttackNotificationService {
     constructor() {
-        this.ADMIN_EMAIL = 'dangminhquan9320@gmail.com'; // Default admin email
+        // Load admin email from environment with fallback
+        this.ADMIN_EMAIL = this.loadAdminEmail();
         this.ATTACK_ENDPOINT = 'https://formspree.io/f/xyzdrepv'; // Same endpoint as contact form
+        
+        console.log('📧 AttackNotificationService initialized');
+        console.log('📧 Admin email:', this.ADMIN_EMAIL);
+    }
+
+    // Load admin email from environment
+    loadAdminEmail() {
+        try {
+            const email = process.env.REACT_APP_ADMIN_EMAIL;
+            if (email && email.includes('@')) {
+                console.log('✅ Admin email loaded from .env:', email);
+                return email;
+            } else {
+                console.warn('⚠️ REACT_APP_ADMIN_EMAIL not found or invalid in .env');
+                console.log('📧 Using fallback email: admin@example.com');
+                return 'admin@example.com';
+            }
+        } catch (error) {
+            console.error('❌ Error loading admin email:', error);
+            console.log('📧 Using fallback email: admin@example.com');
+            return 'admin@example.com';
+        }
     }
 
     // Gửi email notification khi phát hiện tấn công
@@ -35,34 +58,86 @@ class AttackNotificationService {
         }
     }
 
-    // Format email content
+    // Format attack information for email
     formatAttackEmail(attackInfo) {
-        return `
-🚨 SECURITY ALERT - BOT ATTACK DETECTED 🚨
+        let emailBody = `
+🚨 BOT ATTACK DETECTED 🚨
+========================
+⏰ Time: ${attackInfo.timestamp}
+🎯 Reason: ${attackInfo.reason}
+🌐 URL: ${attackInfo.url}
+🔗 Referrer: ${attackInfo.referrer || 'Direct'}
 
-========================================
-ATTACK DETAILS:
-========================================
-Timestamp: ${attackInfo.timestamp}
-Detection Reason: ${attackInfo.reason}
-User Agent: ${attackInfo.userAgent}
-Language: ${attackInfo.language}
-Platform: ${attackInfo.platform}
-Screen Resolution: ${attackInfo.screen?.width}x${attackInfo.screen?.height}
-Timezone: ${attackInfo.timezone}
+🖥️ BROWSER INFO:
+• User Agent: ${attackInfo.userAgent}
+• Language: ${attackInfo.language}
+• Platform: ${attackInfo.platform}
+• Screen: ${attackInfo.screen?.width}x${attackInfo.screen?.height}
+• Timezone: ${attackInfo.timezone}`;
 
-========================================
-DETECTION DATA:
-========================================
+        // Add fingerprint information if available
+        if (attackInfo.fingerprint) {
+            const fp = attackInfo.fingerprint;
+            emailBody += `
+
+🔍 FINGERPRINT ANALYSIS:
+• Hash: ${fp.hash || 'N/A'}
+• Browser: ${fp.userAgent || 'N/A'}
+• Language: ${fp.language || 'N/A'}
+• Platform: ${fp.platform || 'N/A'}
+• Screen: ${fp.screen?.width}x${fp.screen?.height} (${fp.screen?.colorDepth}bit)
+• Window: ${fp.window?.innerWidth}x${fp.window?.innerHeight}
+• Device Pixel Ratio: ${fp.window?.devicePixelRatio}
+• Hardware Cores: ${fp.hardware?.cores || 'N/A'}
+• Memory: ${fp.hardware?.memory || 'N/A'}GB
+• Touch Points: ${fp.hardware?.maxTouchPoints || 0}
+
+🎨 CANVAS FINGERPRINT:
+• Hash: ${fp.canvas?.hash || 'N/A'}
+
+🎮 WEBGL INFO:
+• Vendor: ${fp.webgl?.vendor || 'N/A'}
+• Renderer: ${fp.webgl?.renderer || 'N/A'}
+• Version: ${fp.webgl?.version || 'N/A'}
+
+🔊 AUDIO FINGERPRINT:
+• Hash: ${fp.audio?.hash || 'N/A'}
+
+🔤 FONTS DETECTED:
+• Count: ${fp.fonts?.length || 0}
+• List: ${fp.fonts?.slice(0, 10).join(', ') || 'N/A'}
+
+🔌 PLUGINS:
+• Count: ${fp.plugins?.length || 0}
+• List: ${fp.plugins?.slice(0, 5).map(p => p.name).join(', ') || 'N/A'}
+
+🌐 NETWORK INFO:
+• Online: ${fp.network?.online ? 'Yes' : 'No'}
+• Connection: ${fp.network?.connection?.effectiveType || 'N/A'}
+• Downlink: ${fp.network?.connection?.downlink || 'N/A'}Mbps
+• RTT: ${fp.network?.connection?.rtt || 'N/A'}ms
+
+💾 STORAGE:
+• LocalStorage: ${fp.storage?.localStorage ? 'Yes' : 'No'}
+• SessionStorage: ${fp.storage?.sessionStorage ? 'Yes' : 'No'}
+• IndexedDB: ${fp.storage?.indexedDB ? 'Yes' : 'No'}
+
+🛡️ SECURITY:
+• Ad Blocker: ${fp.security?.adBlocker ? 'Yes' : 'No'}
+• Tracking Protection: ${fp.security?.trackingProtection ? 'Yes' : 'No'}
+• Private Mode: ${fp.security?.privateMode ? 'Yes' : 'No'}
+
+📊 BEHAVIOR ANALYSIS:
+• Mouse Speed: ${fp.behavior?.mouseSpeed?.average || 0}px/ms
+• Typing Speed: ${fp.behavior?.typingPattern?.keysPerMinute || 0} keys/min
+• Scroll Events: ${fp.behavior?.scrollBehavior?.totalScrolls || 0}
+
+📋 ADDITIONAL DATA:
 ${JSON.stringify(attackInfo.data, null, 2)}
 
-========================================
-RECOMMENDED ACTIONS:
-========================================
-1. Check server logs for this IP
-2. Consider blocking suspicious IPs
-3. Monitor for repeated attacks
-4. Review security measures
+🔒 SECURITY ALERT:
+This automated alert indicates potential bot activity.
+Please review the fingerprint data for further analysis.
 
 ========================================
 SYSTEM INFO:
@@ -74,8 +149,10 @@ Generated: ${new Date().toISOString()}
 ========================================
 This is an automated security alert.
 Please investigate immediately.
-========================================
-        `.trim();
+========================================`;
+        }
+
+        return emailBody;
     }
 
     // Gửi qua Formspree
@@ -198,11 +275,35 @@ Please investigate immediately.
     static quickTest() {
         const service = new AttackNotificationService();
         console.log('🚀 Starting bot attack test...');
+        console.log('📧 Admin email:', service.ADMIN_EMAIL);
         service.testEmailService().then(() => {
             console.log('✅ Test completed! Check your email.');
         }).catch(error => {
             console.error('❌ Test failed:', error);
         });
+    }
+
+    // Get current admin email
+    getAdminEmail() {
+        return this.ADMIN_EMAIL;
+    }
+
+    // Update admin email (for runtime changes)
+    setAdminEmail(email) {
+        if (email && email.includes('@')) {
+            this.ADMIN_EMAIL = email;
+            console.log('📧 Admin email updated to:', email);
+        } else {
+            console.warn('⚠️ Invalid email format:', email);
+        }
+    }
+
+    // Reload admin email from environment
+    reloadAdminEmail() {
+        const oldEmail = this.ADMIN_EMAIL;
+        this.ADMIN_EMAIL = this.loadAdminEmail();
+        console.log('📧 Admin email reloaded:', oldEmail, '→', this.ADMIN_EMAIL);
+        return this.ADMIN_EMAIL;
     }
 }
 
@@ -212,3 +313,6 @@ export default attackNotificationService;
 // Make available globally for testing
 window.testAttackNotification = () => AttackNotificationService.quickTest();
 window.attackNotificationService = attackNotificationService;
+window.getAdminEmail = () => attackNotificationService.getAdminEmail();
+window.setAdminEmail = (email) => attackNotificationService.setAdminEmail(email);
+window.reloadAdminEmail = () => attackNotificationService.reloadAdminEmail();
