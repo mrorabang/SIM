@@ -249,39 +249,170 @@ Please investigate immediately.
                 console.error('❌ Failed to send pending notification:', error);
             }
         }
-
         // Xóa đã gửi thành công
         localStorage.removeItem('pending_attack_notifications');
     }
 
-    // Test email service
-    async testEmailService() {
-        const testAttack = {
-            timestamp: new Date().toISOString(),
-            reason: 'test_notification',
-            userAgent: 'Test Bot',
-            language: 'en-US',
-            platform: 'Test',
-            screen: { width: 1920, height: 1080 },
-            timezone: 'Asia/Ho_Chi_Minh',
-            data: { test: true }
-        };
+    // Test email service with fingerprint
+    // async testEmailService() {
+    //     console.log('🔍 Generating fingerprint for test...');
+    //     const fingerprint = await window.fingerprintingService.generateFingerprint();
+        
+    //     const testAttack = {
+    //         timestamp: new Date().toISOString(),
+    //         reason: 'test_notification_with_fingerprint',
+    //         userAgent: navigator.userAgent,
+    //         language: navigator.language,
+    //         platform: navigator.platform,
+    //         ip: 'client-side',
+    //         screen: { width: window.screen.width, height: window.screen.height },
+    //         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    //         url: window.location.href,
+    //         referrer: document.referrer,
+    //         fingerprint: fingerprint,
+    //         data: { 
+    //             test: true,
+    //             fingerprint_hash: fingerprint?.hash,
+    //             browser_info: 'Test attack with full fingerprinting'
+    //         }
+    //     };
 
-        console.log('📧 Testing email notification service...');
-        await this.sendAttackNotification(testAttack);
-    }
+    //     console.log('📧 Testing email notification service with fingerprint...');
+    //     console.log('🔍 Test fingerprint:', fingerprint?.hash);
+    //     await this.sendAttackNotification(testAttack);
+    // }
 
-    // Quick test function for browser console
-    static quickTest() {
-        const service = new AttackNotificationService();
-        console.log('🚀 Starting bot attack test...');
-        console.log('📧 Admin email:', service.ADMIN_EMAIL);
-        service.testEmailService().then(() => {
-            console.log('✅ Test completed! Check your email.');
-        }).catch(error => {
-            console.error('❌ Test failed:', error);
-        });
-    }
+    // // Simulate bot attack
+    // async simulateBotAttack() {
+    //     console.log('🤖 Simulating bot attack...');
+        
+    //     // Generate fingerprint
+    //     const fingerprint = await window.fingerprintingService.generateFingerprint();
+        
+    //     const simulatedAttack = {
+    //         timestamp: new Date().toISOString(),
+    //         reason: 'honeypot_input', // Common bot detection reason
+    //         userAgent: navigator.userAgent,
+    //         language: navigator.language,
+    //         platform: navigator.platform,
+    //         ip: 'client-side',
+    //         screen: { width: window.screen.width, height: window.screen.height },
+    //         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    //         url: window.location.href,
+    //         referrer: document.referrer,
+    //         fingerprint: fingerprint,
+    //         data: {
+    //             simulated: true,
+    //             honeypot_field: 'bot_filled_input',
+    //             detection_method: 'honeypot_trap',
+    //             fingerprint_hash: fingerprint?.hash,
+    //             attack_patterns: ['no_mouse_movement', 'ultra_fast_load', 'honeypot_input']
+    //         }
+    //     };
+
+    //     console.log('🚀 Sending simulated bot attack notification...');
+    //     await this.sendAttackNotification(simulatedAttack);
+    //     return simulatedAttack;
+    // }
+
+    // // Test multiple attack scenarios
+    // async testAttackScenarios() {
+    //     console.log('🎯 Testing multiple attack scenarios...');
+        
+    //     const scenarios = [
+    //         {
+    //             reason: 'ultra_fast_load',
+    //             data: { loadTime: 50, threshold: 100 }
+    //         },
+    //         {
+    //             reason: 'no_mouse_movement',
+    //             data: { mouseEvents: 0, timeElapsed: 5000 }
+    //         },
+    //         {
+    //             reason: 'honeypot_focus',
+    //             data: { fieldType: 'honeypot', element: 'hidden_input' }
+    //         },
+    //         {
+    //             reason: 'honeypot_input',
+    //             data: { fieldType: 'honeypot', value: 'bot_detected' }
+    //         },
+    //         {
+    //             reason: 'no_interaction',
+    //             data: { mouseEvents: 0, keyPresses: 0, timeElapsed: 10000 }
+    //         }
+    //     ];
+
+    //     for (let i = 0; i < scenarios.length; i++) {
+    //         const scenario = scenarios[i];
+    //         console.log(`📧 Testing scenario ${i + 1}/${scenarios.length}: ${scenario.reason}`);
+            
+    //         const attack = {
+    //             timestamp: new Date().toISOString(),
+    //             reason: scenario.reason,
+    //             userAgent: navigator.userAgent,
+    //             language: navigator.language,
+    //             platform: navigator.platform,
+    //             ip: 'client-side',
+    //             screen: { width: window.screen.width, height: window.screen.height },
+    //             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    //             url: window.location.href,
+    //             referrer: document.referrer,
+    //             fingerprint: await window.fingerprintingService.generateFingerprint(),
+    //             data: scenario.data
+    //         };
+
+    //         await this.sendAttackNotification(attack);
+            
+    //         // Wait between attacks
+    //         await new Promise(resolve => setTimeout(resolve, 1000));
+    //     }
+        
+    //     console.log('✅ All attack scenarios tested!');
+    // }
+
+    // // Quick test function for browser console
+    // static quickTest() {
+    //     const service = new AttackNotificationService();
+    //     console.log('🚀 Starting bot attack test...');
+    //     console.log('📧 Admin email:', service.ADMIN_EMAIL);
+    //     service.testEmailService().then(() => {
+    //         console.log('✅ Test completed! Check your email.');
+    //     }).catch(error => {
+    //         console.error('❌ Test failed:', error);
+    //     });
+    // }
+
+    // // Simple email test (no fingerprint)
+    // static simpleEmailTest() {
+    //     const service = new AttackNotificationService();
+    //     console.log('📧 Testing simple email...');
+    //     console.log('📧 Admin email:', service.ADMIN_EMAIL);
+        
+    //     const simpleAttack = {
+    //         timestamp: new Date().toISOString(),
+    //         reason: 'simple_email_test',
+    //         userAgent: navigator.userAgent,
+    //         language: navigator.language,
+    //         platform: navigator.platform,
+    //         ip: 'client-side',
+    //         screen: { width: window.screen.width, height: window.screen.height },
+    //         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    //         url: window.location.href,
+    //         referrer: document.referrer,
+    //         fingerprint: null,
+    //         data: { 
+    //             simple_test: true,
+    //             message: 'This is a simple email test to verify Formspree is working',
+    //             timestamp: new Date().toLocaleString()
+    //         }
+    //     };
+
+    //     service.sendAttackNotification(simpleAttack).then(() => {
+    //         console.log('✅ Simple email sent! Check:', service.ADMIN_EMAIL);
+    //     }).catch(error => {
+    //         console.error('❌ Simple email failed:', error);
+    //     });
+    // }
 
     // Get current admin email
     getAdminEmail() {
@@ -310,8 +441,7 @@ Please investigate immediately.
 const attackNotificationService = new AttackNotificationService();
 export default attackNotificationService;
 
-// Make available globally for testing
-window.testAttackNotification = () => AttackNotificationService.quickTest();
+// Make available globally for production use only
 window.attackNotificationService = attackNotificationService;
 window.getAdminEmail = () => attackNotificationService.getAdminEmail();
 window.setAdminEmail = (email) => attackNotificationService.setAdminEmail(email);

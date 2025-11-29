@@ -613,11 +613,13 @@ class FingerprintingService {
 const fingerprintingService = new FingerprintingService();
 export default fingerprintingService;
 
-// Make available globally for testing
+// Make available globally for production use only
 window.fingerprintingService = fingerprintingService;
-window.testFingerprinting = async () => {
-    console.log('🔍 Generating fingerprint...');
-    const fp = await fingerprintingService.generateFingerprint();
-    console.log('📊 Fingerprint result:', fp);
-    return fp;
-};
+
+// Test functions (commented out for production)
+// window.testFingerprinting = async () => {
+//     console.log('🔍 Generating fingerprint...');
+//     const fp = await fingerprintingService.generateFingerprint();
+//     console.log('📊 Fingerprint result:', fp);
+//     return fp;
+// };
